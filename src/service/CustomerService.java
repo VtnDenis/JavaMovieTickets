@@ -58,4 +58,27 @@ public class CustomerService {
             System.out.println("Error writing customers file: " + e.getMessage());
         }
     }
+
+    public void addCustomer(Customer customer) {
+        List<Customer> customers = getAllCustomers();
+        customers.add(customer);
+        saveCustomers(customers);
+    }
+
+    public void updateCustomer(Customer updatedCustomer) {
+        List<Customer> customers = getAllCustomers();
+        for (int i = 0; i < customers.size(); i++) {
+            if (customers.get(i).getUsername().equals(updatedCustomer.getUsername())) {
+                customers.set(i, updatedCustomer);
+                break;
+            }
+        }
+        saveCustomers(customers);
+    }
+
+    public void deleteCustomer(String username) {
+        List<Customer> customers = getAllCustomers();
+        customers.removeIf(customer -> customer.getUsername().equals(username));
+        saveCustomers(customers);
+    }
 }
