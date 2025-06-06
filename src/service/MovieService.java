@@ -28,8 +28,9 @@ public class MovieService {
                         String releaseDate = parts[3];
                         int runningTime = Integer.parseInt(parts[4]);
                         double price = Double.parseDouble(parts[5]);
+                        String showtimes = parts.length > 6 ? parts[6] : "";
 
-                        Movie movie = new Movie(id, title, genre, releaseDate, runningTime, price);
+                        Movie movie = new Movie(id, title, genre, releaseDate, runningTime, price, showtimes);
                         movies.add(movie);
                     } catch (NumberFormatException e) {
                         System.out.println("Error parsing numeric value in line: " + line);
@@ -60,7 +61,8 @@ public class MovieService {
             for (Movie movie : movies) {
                 writer.write(movie.getId() + "," + movie.getTitle() + "," +
                              movie.getGenre() + "," + movie.getReleaseDate() + "," +
-                             movie.getRunningTime() + "," + movie.getPrice());
+                             movie.getRunningTime() + "," + movie.getPrice() + "," +
+                             movie.getShowtimes());
                 writer.newLine();
             }
             writer.close();

@@ -1,47 +1,328 @@
 # Movie Ticket Booking System
 
 ## Description
-Cette application Java permet aux clients de réserver des billets de cinéma et aux employés de gérer les films et les réservations. Elle utilise Java Swing pour l'interface graphique et des fichiers texte pour le stockage des données.
+This Java application allows customers to book movie tickets and employees to manage movies and reservations. It uses Java Swing for the graphical interface and text files for data storage.
 
-## Fonctionnalités
+The application was developed as part of an object-oriented programming project in Java, with the goal of creating a complete movie ticket booking system that meets the needs of both customers and cinema management.
 
-### Pour les clients
-- Connexion avec nom d'utilisateur et mot de passe
-- Consultation des films disponibles
-- Réservation de billets
-- Réduction automatique pour les étudiants
-- Visualisation des réservations
+## Features
 
-### Pour les employés
-- Consultation de toutes les réservations
-- Gestion des films (ajout, modification, suppression)
-- Gestion des clients
+### For Customers
+- Login with username and password
+- Browse available movies with their details (title, genre, release date, runtime, price)
+- View showtimes for each movie
+- Book tickets with selection of number of seats
+- Apply different discounts (student, senior, family, etc.)
+- Payment simulation with booking confirmation
+- View booking history
+
+### For Employees
+- View all bookings made
+- Complete movie management (add, edit, delete)
+- View customer information
+- Manage showtimes
+- View sales statistics (implicitly through booking display)
 
 ## Installation
-1. Clonez ce dépôt
-2. Ouvrez le projet dans IntelliJ IDEA ou votre IDE Java préféré
-3. Exécutez la classe `Main.java`
+1. Clone this repository
+2. Open the project in IntelliJ IDEA or your preferred Java IDE
+3. Make sure JDK 8 or higher is installed
+4. Run the `Main.java` class
 
-## Fichiers de données
-L'application utilise quatre fichiers texte pour stocker ses données :
-- `users.txt` : contient les informations d'authentification des utilisateurs
-- `customers.txt` : contient les informations des clients, y compris leur statut étudiant
-- `movies.txt` : contient les informations sur les films
-- `bookings.txt` : contient les informations sur les réservations
+## Usage
 
-## Comptes de test
+### Login Interface
+The application opens with a login window where the user must enter their username and password. Depending on the user's role (customer or employee), the corresponding interface will be displayed.
 
-### Clients
-- Nom d'utilisateur : alice, Mot de passe : pass123
-- Nom d'utilisateur : bob, Mot de passe : secure
-- Nom d'utilisateur : david, Mot de passe : movieLover
-- Nom d'utilisateur : frank, Mot de passe : guest
+### Customer Interface
+The customer interface is organized into two tabs:
+- **Book Tickets**: Allows booking tickets by selecting a movie, number of tickets, and an applicable discount
+- **Booking History**: Displays the customer's booking history
 
-### Employés
-- Nom d'utilisateur : charlie, Mot de passe : cinema
-- Nom d'utilisateur : eve, Mot de passe : adminPass
+### Employee Interface
+The employee interface is organized into three tabs:
+- **Manage Movies**: Allows adding, editing, or deleting movies
+- **View Customers**: Displays the list of customers with their information
+- **View Bookings**: Displays all bookings made
 
-## Structure du projet
-- `model/` : contient les classes de modèle (User, Customer, Movie, Booking)
-- `service/` : contient les classes de service pour gérer les données
-- `gui/` : contient les classes d'interface utilisateur
+## Project Structure
+
+### Class Diagram
+```mermaid
+classDiagram
+direction LR
+
+class JFrame {
+  <<Java Swing Class>>
+}
+
+%% ==== MODEL ====
+class User {
+  +String username
+  +String password
+  +String role
+  +getUsername(): String
+  +getPassword(): String
+  +getRole(): String
+  +isEmployee(): boolean
+  +isCustomer(): boolean
+}
+
+class Customer {
+  +String username
+  +String fullName
+  +boolean student
+  +getUsername(): String
+  +getFullName(): String
+  +isStudent(): boolean
+  +setFullName(fullName: String): void
+  +setStudent(student: boolean): void
+}
+
+class Movie {
+  +int id
+  +String title
+  +String genre
+  +String releaseDate
+  +int runningTime
+  +double price
+  +String showtimes
+  +toString(): String
+}
+
+class Booking {
+  +String bookingId
+  +String username
+  +int movieId
+  +int numTickets
+  +double totalPrice
+  +String bookingDate
+}
+
+class Discount {
+  +String code
+  +String description
+  +double percentage
+  +boolean active
+  +getCode(): String
+  +getDescription(): String
+  +getPercentage(): double
+  +isActive(): boolean
+  +setDescription(desc: String): void
+  +setPercentage(perc: double): void
+  +setActive(active: boolean): void
+}
+
+%% ==== SERVICES ====
+class UserService {
+  +String USER_FILE_PATH
+  +getAllUsers(): List~User~
+  +authenticateUser(username: String, password: String): User
+}
+
+class CustomerService {
+  +String CUSTOMER_FILE_PATH
+  +getAllCustomers(): List~Customer~
+  +getCustomerByUsername(username: String): Customer
+  +saveCustomers(customers: List~Customer~): void
+}
+
+class MovieService {
+  +String MOVIE_FILE_PATH
+  +getAllMovies(): List~Movie~
+  +getMovieById(id: int): Movie
+  +saveMovies(movies: List~Movie~): void
+  +addMovie(movie: Movie): void
+  +updateMovie(movie: Movie): void
+  +deleteMovie(id: int): void
+}
+
+class BookingService {
+  +String BOOKING_FILE_PATH
+  +getAllBookings(): List~Booking~
+  +saveBookings(bookings: List~Booking~): void
+  +addBooking(booking: Booking): void
+  +getNextBookingId(): String
+}
+
+class DiscountService {
+  +String DISCOUNT_FILE_PATH
+  +getAllDiscounts(): List~Discount~
+  +saveDiscounts(discounts: List~Discount~): void
+  +addDiscount(discount: Discount): void
+  +updateDiscount(discount: Discount): void
+  +deleteDiscount(code: String): void
+  +getDiscountByCode(code: String): Discount
+}
+
+%% ==== GUI ====
+class LoginWindow {
+  +JTextField usernameField
+  +JPasswordField passwordField
+  +JButton loginButton
+  +UserService userService
+  +authenticate(): void
+}
+
+class CustomerView {
+  +User currentUser
+  +MovieService movieService
+  +CustomerService customerService
+  +BookingService bookingService
+  +DiscountService discountService
+  +JComboBox movieComboBox
+  +JSpinner ticketsSpinner
+  +JComboBox discountComboBox
+  +JLabel priceLabel
+  +JButton buyButton
+  +JTabbedPane tabbedPane
+  +JTable bookingHistoryTable
+  +updatePrice(): void
+  +processBooking(): void
+  +loadBookingHistory(): void
+}
+
+class EmployeeView {
+  +MovieService movieService
+  +CustomerService customerService
+  +BookingService bookingService
+  +JTabbedPane tabbedPane
+  +JTable movieTable
+  +JTable customerTable
+  +JTable bookingTable
+  +loadMovies(): void
+  +loadCustomers(): void
+  +loadBookings(): void
+  +addMovieAction(): void
+  +editMovieAction(): void
+  +deleteMovieAction(): void
+}
+
+%% ==== MAIN ====
+class Main {
+  +main(args: String[]): void
+}
+
+%% ==== HERITAGE ====
+JFrame <|-- LoginWindow
+JFrame <|-- CustomerView
+JFrame <|-- EmployeeView
+
+%% ==== ASSOCIATIONS ====
+UserService "1" o-- "*" User : manages
+CustomerService "1" o-- "*" Customer : manages
+MovieService "1" o-- "*" Movie : manages
+BookingService "1" o-- "*" Booking : manages
+DiscountService "1" o-- "*" Discount : manages
+
+LoginWindow --> UserService : userService
+CustomerView --> User : currentUser
+CustomerView --> MovieService : movieService
+CustomerView --> CustomerService : customerService
+CustomerView --> BookingService : bookingService
+CustomerView --> DiscountService : discountService
+EmployeeView --> MovieService
+EmployeeView --> CustomerService
+EmployeeView --> BookingService
+
+%% ==== DEPENDANCES ====
+Main ..> LoginWindow
+LoginWindow ..> UserService
+LoginWindow ..> CustomerView
+LoginWindow ..> EmployeeView
+CustomerView ..> Movie
+CustomerView ..> Booking
+CustomerView ..> Discount
+CustomerView ..> MovieService
+CustomerView ..> CustomerService
+CustomerView ..> BookingService
+CustomerView ..> DiscountService
+EmployeeView ..> Movie
+EmployeeView ..> Customer
+EmployeeView ..> Booking
+EmployeeView ..> MovieService
+EmployeeView ..> CustomerService
+EmployeeView ..> BookingService
+
+%% ==== FOREIGN KEY ====
+Booking ..> User : via username
+Booking ..> Movie : via movieId
+%% ---- Styling for packages ----
+classDef modelColor fill:#f9f,stroke:#333,stroke-width:2px
+classDef serviceColor fill:#9cf,stroke:#333,stroke-width:2px
+classDef guiColor fill:#9fc,stroke:#333,stroke-width:2px
+classDef defaultColor fill:#lightgrey,stroke:#333,stroke-width:2px
+classDef externalsColor fill:#eee,stroke:#666,stroke-width:1px,color:black
+
+%% === Attributes of the model package ===
+class User ::: modelColor
+class Customer ::: modelColor
+class Movie ::: modelColor
+class Booking ::: modelColor
+class Discount ::: modelColor
+
+%% === Attributes of the service package ===
+class UserService ::: serviceColor
+class CustomerService ::: serviceColor
+class MovieService ::: serviceColor
+class BookingService ::: serviceColor
+class DiscountService ::: serviceColor
+
+%% === Attributes of the gui package ===
+class LoginWindow ::: guiColor
+class CustomerView ::: guiColor
+class EmployeeView ::: guiColor
+
+%% === Main class (default) ===
+class Main ::: defaultColor
+
+%% === JFrame class (Swing) ===
+class JFrame ::: externalsColor
+```
+
+### Package Organization
+- `model/`: contains model classes (User, Customer, Movie, Booking, Discount)
+- `service/`: contains service classes for data management (UserService, CustomerService, MovieService, BookingService, DiscountService)
+- `gui/`: contains user interface classes (LoginWindow, CustomerView, EmployeeView)
+
+## Data Files
+The application uses five text files to store its data:
+- `users.txt`: contains user authentication information (username, password, role)
+- `customers.txt`: contains customer information (username, fullName, isStudent)
+- `movies.txt`: contains movie information (id, title, genre, releaseDate, runningTime, price, showtimes)
+- `bookings.txt`: contains booking information (bookingId, username, movieId, numTickets, totalPrice, bookingDate)
+- `discounts.txt`: contains information about available discounts (code, description, percentage, active)
+
+## Discount System
+The application implements an advanced discount system:
+- Student discount (20%): verification of student status in the customer profile
+- Senior discount (15%): for elderly people
+- Family discount (10%): for family bookings
+- Weekend discount (5%): for weekend showtimes
+- Matinee discount (10%): for morning showtimes
+- Holiday discount (5%): for holiday periods (currently disabled)
+
+## Test Accounts
+
+### Customers
+- Username: alice, Password: pass123
+- Username: bob, Password: secure
+- Username: david, Password: movieLover
+- Username: frank, Password: guest
+
+### Employees
+- Username: charlie, Password: cinema
+- Username: eve, Password: adminPass
+
+## Technologies Used
+- Java 8+
+- Java Swing for the graphical interface
+- Text files for data persistence
+
+## Architecture
+The application follows a three-tier architecture:
+1. **Presentation Layer**: GUI classes (LoginWindow, CustomerView, EmployeeView)
+2. **Business Layer**: Services (UserService, CustomerService, MovieService, BookingService, DiscountService)
+3. **Data Layer**: Models (User, Customer, Movie, Booking, Discount) and text files
+
+This architecture allows for a clear separation of concerns and facilitates code maintenance.

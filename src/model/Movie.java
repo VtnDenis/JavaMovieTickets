@@ -7,6 +7,7 @@ public class Movie {
     private String releaseDate;
     private int runningTime;
     private double price;
+    private String showtimes;
 
     public Movie(int id, String title, String genre, String releaseDate, int runningTime, double price) {
         this.id = id;
@@ -15,6 +16,17 @@ public class Movie {
         this.releaseDate = releaseDate;
         this.runningTime = runningTime;
         this.price = price;
+        this.showtimes = "";
+    }
+
+    public Movie(int id, String title, String genre, String releaseDate, int runningTime, double price, String showtimes) {
+        this.id = id;
+        this.title = title;
+        this.genre = genre;
+        this.releaseDate = releaseDate;
+        this.runningTime = runningTime;
+        this.price = price;
+        this.showtimes = showtimes;
     }
 
     public int getId() {
@@ -59,6 +71,14 @@ public class Movie {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public String getShowtimes() {
+        return showtimes;
+    }
+
+    public void setShowtimes(String showtimes) {
+        this.showtimes = showtimes;
     }
 
     @Override

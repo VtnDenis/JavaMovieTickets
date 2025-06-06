@@ -89,10 +89,10 @@ public class EmployeeView extends JFrame {
 
     private void loadMovies() {
         List<Movie> movies = movieService.getAllMovies();
-        String[] columnNames = {"ID", "Title", "Genre", "Release Date", "Running Time", "Price"};
+        String[] columnNames = {"ID", "Title", "Genre", "Release Date", "Running Time", "Price", "Showtimes"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
         for (Movie movie : movies) {
-            Object[] row = {movie.getId(), movie.getTitle(), movie.getGenre(), movie.getReleaseDate(), movie.getRunningTime(), movie.getPrice()};
+            Object[] row = {movie.getId(), movie.getTitle(), movie.getGenre(), movie.getReleaseDate(), movie.getRunningTime(), movie.getPrice(), movie.getShowtimes()};
             model.addRow(row);
         }
         movieTable.setModel(model);
@@ -127,6 +127,7 @@ public class EmployeeView extends JFrame {
         JTextField releaseDateField = new JTextField();
         JTextField runningTimeField = new JTextField();
         JTextField priceField = new JTextField();
+        JTextField showtimesField = new JTextField();
 
         Object[] message = {
             "ID:", idField,
@@ -134,7 +135,8 @@ public class EmployeeView extends JFrame {
             "Genre:", genreField,
             "Release Date (dd/MM/yyyy):", releaseDateField,
             "Running Time (mins):", runningTimeField,
-            "Price:", priceField
+            "Price:", priceField,
+            "Showtimes (e.g. 10:00,14:30,19:00):", showtimesField
         };
 
         int option = JOptionPane.showConfirmDialog(this, message, "Add New Movie", JOptionPane.OK_CANCEL_OPTION);
@@ -145,7 +147,8 @@ public class EmployeeView extends JFrame {
             String releaseDate = releaseDateField.getText();
             int runningTime = Integer.parseInt(runningTimeField.getText());
             double price = Double.parseDouble(priceField.getText());
-            Movie movie = new Movie(id, title, genre, releaseDate, runningTime, price);
+            String showtimes = showtimesField.getText();
+            Movie movie = new Movie(id, title, genre, releaseDate, runningTime, price, showtimes);
             movieService.addMovie(movie);
             loadMovies();
         }
@@ -162,13 +165,15 @@ public class EmployeeView extends JFrame {
             JTextField releaseDateField = new JTextField(movieToEdit.getReleaseDate());
             JTextField runningTimeField = new JTextField(String.valueOf(movieToEdit.getRunningTime()));
             JTextField priceField = new JTextField(String.valueOf(movieToEdit.getPrice()));
+            JTextField showtimesField = new JTextField(movieToEdit.getShowtimes());
 
             Object[] message = {
                 "Title:", titleField,
                 "Genre:", genreField,
                 "Release Date (dd/MM/yyyy):", releaseDateField,
                 "Running Time (mins):", runningTimeField,
-                "Price:", priceField
+                "Price:", priceField,
+                "Showtimes (e.g. 10:00,14:30,19:00):", showtimesField
             };
 
             int option = JOptionPane.showConfirmDialog(this, message, "Edit Movie", JOptionPane.OK_CANCEL_OPTION);
@@ -178,6 +183,7 @@ public class EmployeeView extends JFrame {
                 movieToEdit.setReleaseDate(releaseDateField.getText());
                 movieToEdit.setRunningTime(Integer.parseInt(runningTimeField.getText()));
                 movieToEdit.setPrice(Double.parseDouble(priceField.getText()));
+                movieToEdit.setShowtimes(showtimesField.getText());
                 movieService.updateMovie(movieToEdit);
                 loadMovies();
             }
