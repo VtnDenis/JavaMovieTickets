@@ -1,0 +1,77 @@
+CAHIER DES CHARGES : PROJET JAVA OOP - SYSTÈME DE RÉSERVATION DE BILLETS DE CINÉMA
+
+**1. Titre du Projet :**
+OOP JAVA PROJECT - Movie Ticket Booking Project
+
+**2. Objectif Général :**
+Développer une application de réservation de billets de cinéma qui permet aux clients de réserver des billets pour les films de leur choix. L'application doit également aider la direction du cinéma à maintenir ses enregistrements de ventes et de clients.
+
+**3. Architecture Générale Attendue :**
+*   **Interface Utilisateur Graphique (GUI) :** Pour les clients et les employés.
+*   **Classes Java :** Pour représenter les entités, récupérer les informations, mettre à jour les enregistrements dans la source de données (fichiers texte), et générer des rapports (implicitement via l'affichage des données).
+*   **Stockage de Données :** Fichiers texte pour stocker les données nécessaires. (Alternative MySQL mentionnée dans le document original, mais nous utiliserons des fichiers texte pour l'agent).
+
+**4. Description Détaillée du Programme et des Fonctionnalités :**
+
+   **4.1. Fonctionnalités Communes :**
+   *   L'application doit afficher la sélection des films actuellement joués au cinéma.
+   *   Chaque type d'utilisateur (client, employé) doit disposer d'un nom d'utilisateur et d'un mot de passe pour se connecter à son compte.
+
+   **4.2. Fonctionnalités pour les Clients :**
+   *   Choisir un film parmi ceux affichés.
+   *   Réserver le nombre de billets requis.
+   *   Calculer la facture, avec ou sans réductions (par exemple, une option pour "réduction étudiant").
+   *   (Implicite) Consulter la disponibilité ou les informations sur les films.
+   *   Créer un écran factice ("dummy screen") pour indiquer le traitement des paiements.
+
+   **4.3. Fonctionnalités pour les Employés (Gestion du cinéma) :**
+   *   Mettre à jour la liste des films actuellement joués.
+   *   Introduire diverses offres de réduction.
+   *   Maintenir les enregistrements des clients.
+   *   Consulter les films répertoriés ("populated movies").
+   *   (Implicite à partir de la gestion) Accéder aux détails des films (horaires, prix) et aux commandes clients.
+
+**5. Données à Gérer :**
+*   Détails des films actuellement joués.
+*   Horaires des séances.
+*   Prix des billets.
+*   Commandes clients générées et maintenues.
+
+**6. Exigences d'Implémentation Spécifiques (pour l'agent, simplifiées selon les instructions précédentes) :**
+*   **Classes, Méthodes, Attributs :** Concevoir et implémenter les classes Java nécessaires.
+    *   Identifier et introduire des relations d'héritage et d'agrégation si pertinent et si cela simplifie sans complexifier inutilement le code.
+*   **GUI :** Ajouter les écrans graphiques nécessaires pour une exécution réussie des fonctionnalités.
+    *   L'interface utilisateur graphique n'a pas besoin de ressembler exactement à l'exemple fourni dans le document original (image avec Pirates des Caraïbes, Shrek, Spider-Man). L'exemple sert d'illustration.
+*   **Persistance des Données :**
+    *   Les enregistrements doivent être maintenus dans des fichiers texte.
+    *   Le code Java doit pouvoir lire et écrire dans plusieurs fichiers texte si nécessaire.
+    *   Chaque fichier texte doit être initialement peuplé avec au moins 6 enregistrements.
+
+**7. Structure de l'Application (suggestion basée sur le document) :**
+*   Interaction : GUI (pour clients/employés) <-> Classes Java (logique métier, accès données) <-> Fichiers Texte (stockage).
+
+**8. Instructions spécifiques pour l'agent (rappel des contraintes données précédemment) :**
+*   **Langage :** Java.
+*   **Framework GUI :** Java Swing.
+*   **Stockage de données :** Uniquement des fichiers texte (pas de base de données MySQL).
+*   **Qualité du code :**
+    *   ABSOLUMENT AUCUN COMMENTAIRE dans le code (ni Javadoc, ni commentaires en ligne).
+    *   AUCUNE GESTION D'ERREURS EXPLICITE (pas de blocs try-catch, pas de validation d'entrée poussée). Supposer que toutes les entrées sont correctes et que les fichiers existent.
+    *   Le code doit être aussi SIMPLE, ÉPURÉ et DIRECT que possible.
+*   **Contenu des fichiers texte initiaux (minimum 6 enregistrements chacun) :**
+    *   `users.txt` (ex: username,password,role)
+    *   `movies.txt` (ex: id,title,genre,releaseDate,runningTime,price)
+    *   `customers.txt` (ex: username,fullName,studentStatus)
+    *   `bookings.txt` (ex: bookingId,username,movieId,numTickets,totalPrice,bookingDate)
+*   **Logique de réduction étudiante :** Implémenter une logique simple pour une réduction si l'option "étudiant" est sélectionnée.
+
+**9. Livrables attendus de l'agent :**
+*   L'ensemble du code source Java (fichiers .java).
+*   Les fichiers texte initiaux avec des données factices.
+*   Une structure de projet compatible avec IntelliJ IDEA.
+
+**(Sections du document original non directement applicables à la génération de code par l'agent mais fournies pour contexte complet si besoin : Planification hebdomadaire, Soumission finale, Documentation Javadoc, Diagramme UML. L'agent doit se concentrer sur la génération du code fonctionnel selon les contraintes ci-dessus.)**
+
+---
+
+Ce texte devrait être plus facile à traiter pour un agent IA car il est structuré et en texte brut. N'hésite pas à le modifier si tu veux accentuer certains points ou en ajouter d'autres pour l'agent.

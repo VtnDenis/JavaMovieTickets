@@ -1,0 +1,7 @@
+alice,pass123,customer
+bob,secure,customer
+charlie,cinema,employee
+david,movieLover,customer
+eve,adminPass,employee
+frank,guest,customer
+

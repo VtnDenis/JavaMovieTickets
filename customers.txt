@@ -1,0 +1,7 @@
+alice,Alice Wonderland,true
+bob,Bob The Builder,true
+david,David Copperfield,false
+frank,Frank Sinatra,true
+grace,Grace Kelly,false
+henry,Henry Ford,true
+
