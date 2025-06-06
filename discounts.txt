@@ -1,0 +1,6 @@
+STUDENT,Student Discount,20.0,true
+SENIOR,Senior Citizen Discount,15.0,true
+FAMILY,Family Package Discount,10.0,true
+WEEKEND,Weekend Special,5.0,true
+MATINEE,Matinee Show Discount,10.0,true
+HOLIDAY,Holiday Special,5.0,false
