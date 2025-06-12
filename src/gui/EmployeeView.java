@@ -188,6 +188,8 @@ public class EmployeeView extends JFrame {
         JTextField runningTimeField = new JTextField();
         JTextField priceField = new JTextField();
         JTextField showtimesField = new JTextField();
+        JTextField posterField = new JTextField();      // Pour le chemin ou l'URL de l'affiche
+        JTextArea synopsisArea = new JTextArea(5, 20);
 
         Object[] message = {
             "ID:", idField,
@@ -208,7 +210,10 @@ public class EmployeeView extends JFrame {
             int runningTime = Integer.parseInt(runningTimeField.getText());
             double price = Double.parseDouble(priceField.getText());
             String showtimes = showtimesField.getText();
-            Movie movie = new Movie(id, title, genre, releaseDate, runningTime, price, showtimes);
+            String poster = posterField.getText();
+            String synopsis = synopsisArea.getText();
+            Movie movie = new Movie(id, title, genre, releaseDate, runningTime, price, showtimes, poster, synopsis);
+
             movieService.addMovie(movie);
             loadMovies();
         }

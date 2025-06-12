@@ -8,18 +8,11 @@ public class Movie {
     private int runningTime;
     private double price;
     private String showtimes;
+    private String poster;
+    private String synopsis;
 
-    public Movie(int id, String title, String genre, String releaseDate, int runningTime, double price) {
-        this.id = id;
-        this.title = title;
-        this.genre = genre;
-        this.releaseDate = releaseDate;
-        this.runningTime = runningTime;
-        this.price = price;
-        this.showtimes = "";
-    }
-
-    public Movie(int id, String title, String genre, String releaseDate, int runningTime, double price, String showtimes) {
+    public Movie(int id, String title, String genre, String releaseDate, int runningTime, double price,
+                 String showtimes, String poster, String synopsis) {
         this.id = id;
         this.title = title;
         this.genre = genre;
@@ -27,8 +20,11 @@ public class Movie {
         this.runningTime = runningTime;
         this.price = price;
         this.showtimes = showtimes;
+        this.poster = poster;
+        this.synopsis = synopsis;
     }
 
+    // Getters
     public int getId() {
         return id;
     }
@@ -53,6 +49,19 @@ public class Movie {
         return price;
     }
 
+    public String getShowtimes() {
+        return showtimes;
+    }
+
+    public String getPoster() {
+        return poster;
+    }
+
+    public String getSynopsis() {
+        return synopsis;
+    }
+
+    // Setters
     public void setTitle(String title) {
         this.title = title;
     }
@@ -73,12 +82,16 @@ public class Movie {
         this.price = price;
     }
 
-    public String getShowtimes() {
-        return showtimes;
-    }
-
     public void setShowtimes(String showtimes) {
         this.showtimes = showtimes;
+    }
+
+    public void setPoster(String poster) {
+        this.poster = poster;
+    }
+
+    public void setSynopsis(String synopsis) {
+        this.synopsis = synopsis;
     }
 
     @Override
