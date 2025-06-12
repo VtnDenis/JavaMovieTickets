@@ -1,46 +1,87 @@
 package service;
 
 import model.User;
-import java.io.BufferedReader;
-import java.io.FileReader;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UserService {
-    private static final String USER_FILE_PATH = "users.txt";
+    private static final String URL = "jdbc:mysql://localhost:3306/cinema";
+    private static final String USER = "root";
+    private static final String PASSWORD = "root";
 
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(USER_FILE_PATH))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Ignorer les lignes vides
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
+        String query = "SELECT * FROM users";
 
-                String[] parts = line.split(",");
-                if (parts.length >= 3) {
-                    User user = new User(parts[0], parts[1], parts[2]);
-                    users.add(user);
-                } else {
-                    System.out.println("Invalid format in line: " + line);
-                }
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String username = rs.getString("username");
+                String password = rs.getString("password");
+                String role = rs.getString("role");
+
+                users.add(new User(username, password, role));
             }
-        } catch (Exception e) {
-            System.out.println("Error reading users file: " + e.getMessage());
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des utilisateurs : " + e.getMessage());
         }
+
         return users;
     }
 
     public User authenticateUser(String username, String password) {
-        List<User> users = getAllUsers();
-        for (User user : users) {
-            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                return user;
+        String query = "SELECT * FROM users WHERE username = ? AND password = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String role = rs.getString("role");
+                    return new User(username, password, role);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'authentification : " + e.getMessage());
+        }
+
+        return null;
+    }
+    public static void main(String[] args) {
+        UserService userService = new UserService();
+
+        System.out.println("Liste des utilisateurs :");
+        List<User> users = userService.getAllUsers();
+
+        if (users.isEmpty()) {
+            System.out.println("Aucun utilisateur trouvé.");
+        } else {
+            for (User u : users) {
+                System.out.println("Nom d'utilisateur : " + u.getUsername());
+                System.out.println("Mot de passe : " + u.getPassword());
+                System.out.println("Rôle : " + u.getRole());
+                System.out.println("-------------------------");
             }
         }
-        return null;
+
+        // Test d'authentification
+        String testUsername = "marc.lemans";
+        String testPassword = "gestion2024";
+        User authenticated = userService.authenticateUser(testUsername, testPassword);
+        if (authenticated != null) {
+            System.out.println("Connexion réussie pour : " + authenticated.getUsername() +
+                    " (rôle : " + authenticated.getRole() + ")");
+        } else {
+            System.out.println("Échec de l'authentification pour l'utilisateur : " + testUsername);
+        }
     }
 }

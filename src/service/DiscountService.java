@@ -1,94 +1,124 @@
 package service;
 
 import model.Discount;
-import java.io.*;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DiscountService {
-    private static final String DISCOUNT_FILE_PATH = "discounts.txt";
+    private static final String URL = "jdbc:mysql://localhost:3306/cinema";
+    private static final String USER = "root";
+    private static final String PASSWORD = "root";
 
     public List<Discount> getAllDiscounts() {
         List<Discount> discounts = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(DISCOUNT_FILE_PATH))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Ignorer les lignes vides et commentaires
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
+        String query = "SELECT * FROM discount";
 
-                String[] parts = line.split(",");
-                if (parts.length >= 4) {
-                    try {
-                        String code = parts[0];
-                        String description = parts[1];
-                        double percentage = Double.parseDouble(parts[2]);
-                        boolean active = Boolean.parseBoolean(parts[3]);
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
 
-                        Discount discount = new Discount(code, description, percentage, active);
-                        discounts.add(discount);
-                    } catch (NumberFormatException e) {
-                        System.out.println("Error parsing numeric value in line: " + line);
-                    }
-                } else {
-                    System.out.println("Invalid format in line: " + line);
-                }
+            while (rs.next()) {
+                String code = rs.getString("code");
+                String description = rs.getString("description");
+                double percentage = rs.getDouble("percentage");
+                boolean active = rs.getBoolean("active");
+
+                discounts.add(new Discount(code, description, percentage, active));
             }
-        } catch (IOException e) {
-            // If file doesn't exist, create it
-            try {
-                new File(DISCOUNT_FILE_PATH).createNewFile();
-            } catch (IOException ex) {
-                System.out.println("Error creating discounts file: " + ex.getMessage());
-            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des réductions : " + e.getMessage());
         }
+
         return discounts;
     }
 
-    public void saveDiscounts(List<Discount> discounts) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(DISCOUNT_FILE_PATH))) {
-            for (Discount discount : discounts) {
-                writer.write(discount.getCode() + "," + discount.getDescription() + "," +
-                             discount.getPercentage() + "," + discount.isActive());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.out.println("Error writing discounts file: " + e.getMessage());
-        }
-    }
-
     public void addDiscount(Discount discount) {
-        List<Discount> discounts = getAllDiscounts();
-        discounts.add(discount);
-        saveDiscounts(discounts);
+        String query = "INSERT INTO discount (code, description, percentage, active) VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, discount.getCode());
+            stmt.setString(2, discount.getDescription());
+            stmt.setDouble(3, discount.getPercentage());
+            stmt.setBoolean(4, discount.isActive());
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'ajout de la réduction : " + e.getMessage());
+        }
     }
 
-    public void updateDiscount(Discount updatedDiscount) {
-        List<Discount> discounts = getAllDiscounts();
-        for (int i = 0; i < discounts.size(); i++) {
-            if (discounts.get(i).getCode().equals(updatedDiscount.getCode())) {
-                discounts.set(i, updatedDiscount);
-                break;
-            }
+    public void updateDiscount(Discount discount) {
+        String query = "UPDATE discount SET description = ?, percentage = ?, active = ? WHERE code = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, discount.getDescription());
+            stmt.setDouble(2, discount.getPercentage());
+            stmt.setBoolean(3, discount.isActive());
+            stmt.setString(4, discount.getCode());
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la mise à jour de la réduction : " + e.getMessage());
         }
-        saveDiscounts(discounts);
     }
 
     public void deleteDiscount(String code) {
-        List<Discount> discounts = getAllDiscounts();
-        discounts.removeIf(discount -> discount.getCode().equals(code));
-        saveDiscounts(discounts);
+        String query = "DELETE FROM discount WHERE code = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, code);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la suppression de la réduction : " + e.getMessage());
+        }
     }
 
     public Discount getDiscountByCode(String code) {
-        List<Discount> discounts = getAllDiscounts();
-        for (Discount discount : discounts) {
-            if (discount.getCode().equals(code)) {
-                return discount;
+        String query = "SELECT * FROM discount WHERE code = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, code);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String description = rs.getString("description");
+                    double percentage = rs.getDouble("percentage");
+                    boolean active = rs.getBoolean("active");
+
+                    return new Discount(code, description, percentage, active);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération de la réduction : " + e.getMessage());
+        }
+
+        return null;
+    }
+    public static void main(String[] args) {
+        DiscountService discountService = new DiscountService();
+
+        System.out.println("Liste des réductions :");
+        List<Discount> discounts = discountService.getAllDiscounts();
+
+        if (discounts.isEmpty()) {
+            System.out.println("Aucune réduction trouvée.");
+        } else {
+            for (Discount d : discounts) {
+                System.out.println("Code : " + d.getCode());
+                System.out.println("Description : " + d.getDescription());
+                System.out.println("Pourcentage : " + d.getPercentage() + "%");
+                System.out.println("Active : " + (d.isActive() ? "Oui" : "Non"));
+                System.out.println("-----------------------------");
             }
         }
-        return null;
     }
 }

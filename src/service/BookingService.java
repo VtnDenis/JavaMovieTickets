@@ -1,80 +1,94 @@
 package service;
 
 import model.Booking;
-import java.io.*;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BookingService {
-    private static final String BOOKING_FILE_PATH = "bookings.txt";
+    private static final String URL = "jdbc:mysql://localhost:3306/cinema";
+    private static final String USER = "root";
+    private static final String PASSWORD = "root";
 
     public List<Booking> getAllBookings() {
         List<Booking> bookings = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(BOOKING_FILE_PATH))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Ignorer les lignes vides et commentaires
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
+        String sql = "SELECT bookingId, username, movieId, numTickets, totalPrice, bookingDate FROM booking";
 
-                try {
-                    String[] parts = line.split(",");
-                    if (parts.length >= 6) {
-                        Booking booking = new Booking(parts[0], parts[1], Integer.parseInt(parts[2]),
-                                                  Integer.parseInt(parts[3]), Double.parseDouble(parts[4]), parts[5]);
-                        bookings.add(booking);
-                    } else {
-                        System.out.println("Invalid format in bookings file: " + line);
-                    }
-                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                    System.out.println("Error parsing booking line: " + line + " - " + e.getMessage());
-                }
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Booking booking = new Booking(
+                        rs.getString("bookingId"),
+                        rs.getString("username"),
+                        rs.getInt("movieId"),
+                        rs.getInt("numTickets"),
+                        rs.getDouble("totalPrice"),
+                        rs.getDate("bookingDate").toString()
+                );
+                bookings.add(booking);
             }
-        } catch (IOException e) {
-            System.out.println("Error reading bookings file: " + e.getMessage());
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des réservations : " + e.getMessage());
         }
         return bookings;
     }
 
-    public void saveBookings(List<Booking> bookings) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(BOOKING_FILE_PATH))) {
-            for (Booking booking : bookings) {
-                writer.write(booking.getBookingId() + "," + booking.getUsername() + "," +
-                             booking.getMovieId() + "," + booking.getNumTickets() + "," +
-                             booking.getTotalPrice() + "," + booking.getBookingDate());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.out.println("Error writing bookings file: " + e.getMessage());
-        }
-    }
-
     public void addBooking(Booking booking) {
-        List<Booking> bookings = getAllBookings();
-        bookings.add(booking);
-        saveBookings(bookings);
+        String sql = "INSERT INTO booking (bookingId, username, movieId, numTickets, totalPrice, bookingDate) VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, booking.getBookingId());
+            pstmt.setString(2, booking.getUsername());
+            pstmt.setInt(3, booking.getMovieId());
+            pstmt.setInt(4, booking.getNumTickets());
+            pstmt.setDouble(5, booking.getTotalPrice());
+            pstmt.setDate(6, Date.valueOf(booking.getBookingDate()));
+
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'ajout de la réservation : " + e.getMessage());
+        }
     }
 
     public String getNextBookingId() {
-        List<Booking> bookings = getAllBookings();
-        if (bookings.isEmpty()) {
-            return "B001";
-        }
-        try {
-            String lastId = bookings.get(bookings.size() - 1).getBookingId();
-            // Vérifier que l'ID commence par 'B' suivi de chiffres
-            if (lastId != null && lastId.matches("B\\d+")) {
-                int num = Integer.parseInt(lastId.substring(1));
-                return "B" + String.format("%03d", num + 1);
-            } else {
-                System.out.println("Invalid booking ID format: " + lastId + ", using default");
-                return "B001";
+        String sql = "SELECT bookingId FROM booking ORDER BY bookingId DESC LIMIT 1";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            if (rs.next()) {
+                String lastId = rs.getString("bookingId");
+                if (lastId != null && lastId.matches("B\\d+")) {
+                    int num = Integer.parseInt(lastId.substring(1));
+                    return "B" + String.format("%03d", num + 1);
+                }
             }
-        } catch (Exception e) {
-            System.out.println("Error generating booking ID: " + e.getMessage());
-            return "B001";
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la génération du nouvel ID : " + e.getMessage());
         }
+        return "B001";
+    }
+    public static void main(String[] args) {
+        BookingService service = new BookingService();
+
+        List<Booking> bookings = service.getAllBookings();
+        System.out.println("Réservations en base :");
+        for (Booking b : bookings) {
+            System.out.printf("ID: %s, User: %s, Film ID: %d, Tickets: %d, Prix total: %.2f, Date: %s%n",
+                    b.getBookingId(), b.getUsername(), b.getMovieId(), b.getNumTickets(), b.getTotalPrice(), b.getBookingDate());
+        }
+
+        // Exemple d'ajout d'une nouvelle réservation
+        String nextId = service.getNextBookingId();
+        Booking newBooking = new Booking(nextId, "emma.lune", 2, 3, 30.0, "2025-06-12");
+        service.addBooking(newBooking);
+        System.out.println("Nouvelle réservation ajoutée avec ID : " + nextId);
     }
 }

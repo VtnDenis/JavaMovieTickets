@@ -1,84 +1,123 @@
 package service;
 
 import model.Customer;
-import java.io.*;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerService {
-    private static final String CUSTOMER_FILE_PATH = "customers.txt";
+
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/cinema";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "root";
 
     public List<Customer> getAllCustomers() {
         List<Customer> customers = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(CUSTOMER_FILE_PATH))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Ignorer les lignes vides et commentaires
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
 
-                String[] parts = line.split(",");
-                if (parts.length >= 3) {
-                    try {
-                        boolean isStudent = Boolean.parseBoolean(parts[2]);
-                        Customer customer = new Customer(parts[0], parts[1], isStudent);
-                        customers.add(customer);
-                    } catch (Exception e) {
-                        System.out.println("Error parsing line: " + line + " - " + e.getMessage());
-                    }
-                } else {
-                    System.out.println("Invalid format in line: " + line);
-                }
+        String query = "SELECT * FROM customer";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                String username = rs.getString("username");
+                String fullName = rs.getString("fullName");
+                boolean isStudent = rs.getBoolean("student");
+
+                customers.add(new Customer(username, fullName, isStudent));
             }
-        } catch (IOException e) {
-            System.out.println("Error reading customers file: " + e.getMessage());
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la récupération des clients : " + e.getMessage());
         }
+
         return customers;
     }
 
     public Customer getCustomerByUsername(String username) {
-        List<Customer> customers = getAllCustomers();
-        for (Customer customer : customers) {
-            if (customer.getUsername().equals(username)) {
-                return customer;
+        String query = "SELECT * FROM customer WHERE username = ?";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                String fullName = rs.getString("fullName");
+                boolean isStudent = rs.getBoolean("student");
+                return new Customer(username, fullName, isStudent);
             }
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la recherche du client : " + e.getMessage());
         }
+
         return null;
     }
 
-    public void saveCustomers(List<Customer> customers) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(CUSTOMER_FILE_PATH))) {
-            for (Customer customer : customers) {
-                writer.write(customer.getUsername() + "," + customer.getFullName() + "," + customer.isStudent());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.out.println("Error writing customers file: " + e.getMessage());
-        }
-    }
-
     public void addCustomer(Customer customer) {
-        List<Customer> customers = getAllCustomers();
-        customers.add(customer);
-        saveCustomers(customers);
+        String query = "INSERT INTO customer (username, fullName, student) VALUES (?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, customer.getUsername());
+            pstmt.setString(2, customer.getFullName());
+            pstmt.setBoolean(3, customer.isStudent());
+
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de l'ajout du client : " + e.getMessage());
+        }
     }
 
-    public void updateCustomer(Customer updatedCustomer) {
-        List<Customer> customers = getAllCustomers();
-        for (int i = 0; i < customers.size(); i++) {
-            if (customers.get(i).getUsername().equals(updatedCustomer.getUsername())) {
-                customers.set(i, updatedCustomer);
-                break;
-            }
+    public void updateCustomer(Customer customer) {
+        String query = "UPDATE customer SET fullName = ?, student = ? WHERE username = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, customer.getFullName());
+            pstmt.setBoolean(2, customer.isStudent());
+            pstmt.setString(3, customer.getUsername());
+
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la mise à jour du client : " + e.getMessage());
         }
-        saveCustomers(customers);
     }
 
     public void deleteCustomer(String username) {
-        List<Customer> customers = getAllCustomers();
-        customers.removeIf(customer -> customer.getUsername().equals(username));
-        saveCustomers(customers);
+        String query = "DELETE FROM customer WHERE username = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, username);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la suppression du client : " + e.getMessage());
+        }
+    }
+    public static void main(String[] args) {
+        CustomerService customerService = new CustomerService();
+
+        System.out.println("Liste des clients :");
+        List<Customer> customers = customerService.getAllCustomers();
+
+        if (customers.isEmpty()) {
+            System.out.println("Aucun client trouvé.");
+        } else {
+            for (Customer c : customers) {
+                System.out.println("Username : " + c.getUsername());
+                System.out.println("Nom complet : " + c.getFullName());
+                System.out.println("Étudiant : " + (c.isStudent() ? "Oui" : "Non"));
+                System.out.println("---------------------------");
+            }
+        }
     }
 }

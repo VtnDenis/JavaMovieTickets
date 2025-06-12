@@ -24,7 +24,7 @@ public class Mysqlc {
             Statement stmt=conn.createStatement();
             ResultSet rs=stmt.executeQuery("select * from booking");
             while(rs.next())
-                System.out.println(rs.getInt(1)+"  "+rs.getString(2));
+                System.out.println(rs.getString(1)+"  "+rs.getString(2));
 
         } catch(SQLException e) {
             System.out.println(e.getMessage());
