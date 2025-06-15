@@ -136,16 +136,31 @@ public class EmployeeView extends JFrame {
         bookingListPanel.add(new JScrollPane(bookingTable), BorderLayout.CENTER);
     }
 
-    private void loadMovies() {
+    private void loadMovies() { /// adapter le jframe
         List<Movie> movies = movieService.getAllMovies();
-        String[] columnNames = {"ID", "Title", "Genre", "Release Date", "Running Time", "Price", "Showtimes"};
+
+        String[] columnNames = {
+                "ID", "Titre", "Genre", "Date de sortie", "Durée (min)", "Prix (€)", "Séances", "Affiche", "Synopsis"
+        };
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
         for (Movie movie : movies) {
-            Object[] row = {movie.getId(), movie.getTitle(), movie.getGenre(), movie.getReleaseDate(), movie.getRunningTime(), movie.getPrice(), movie.getShowtimes()};
+            Object[] row = {
+                    movie.getId(),
+                    movie.getTitle(),
+                    movie.getGenre(),
+                    movie.getReleaseDate(),                       // java.sql.Date ou String
+                    movie.getRunningTime(),                       // durée en minutes
+                    String.format("%.2f", movie.getPrice()),      // prix formaté
+                    movie.getShowtimes(),                         // texte, ex: "14:00, 17:00"
+                    movie.getPoster(),                            // URL ou nom du fichier image
+                    movie.getSynopsis()                           // texte description
+            };
             model.addRow(row);
         }
         movieTable.setModel(model);
+        movieTable.setEnabled(false); // optionnel : empêche modification dans la JTable
     }
+
 
     private void loadCustomers() {
         List<Customer> customers = customerService.getAllCustomers();
