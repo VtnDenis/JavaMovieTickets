@@ -277,7 +277,7 @@ public class CustomerView extends JFrame {
         // Corriger le parsing du prix en remplaçant la virgule par un point
         double totalPrice = Double.parseDouble(priceLabel.getText().replace(',', '.'));
         String bookingId = bookingService.getNextBookingId();
-        String bookingDate = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+        String bookingDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
         Booking booking = new Booking(bookingId, currentUser.getUsername(), selectedMovie.getId(), numTickets, totalPrice, bookingDate);
         bookingService.addBooking(booking);
