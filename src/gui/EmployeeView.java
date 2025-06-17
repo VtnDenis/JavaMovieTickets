@@ -199,40 +199,50 @@ public class EmployeeView extends JFrame {
         JTextField idField = new JTextField();
         JTextField titleField = new JTextField();
         JTextField genreField = new JTextField();
-        JTextField releaseDateField = new JTextField();
+        JTextField releaseDateField = new JTextField(); // format : yyyy-MM-dd
         JTextField runningTimeField = new JTextField();
         JTextField priceField = new JTextField();
         JTextField showtimesField = new JTextField();
-        JTextField posterField = new JTextField();      // Pour le chemin ou l'URL de l'affiche
+        JTextField posterField = new JTextField(); // pour URL ou chemin de l’affiche
         JTextArea synopsisArea = new JTextArea(5, 20);
+        synopsisArea.setLineWrap(true);
+        synopsisArea.setWrapStyleWord(true);
+        JScrollPane synopsisScrollPane = new JScrollPane(synopsisArea);
 
         Object[] message = {
-            "ID:", idField,
-            "Title:", titleField,
-            "Genre:", genreField,
-            "Release Date (dd/MM/yyyy):", releaseDateField,
-            "Running Time (mins):", runningTimeField,
-            "Price:", priceField,
-            "Showtimes (e.g. 10:00,14:30,19:00):", showtimesField
+                "ID:", idField,
+                "Title:", titleField,
+                "Genre:", genreField,
+                "Release Date (yyyy-MM-dd):", releaseDateField,
+                "Running Time (mins):", runningTimeField,
+                "Price:", priceField,
+                "Showtimes (e.g. 10:00,14:30,19:00):", showtimesField,
+                "Poster (URL or path):", posterField,
+                "Synopsis:", synopsisScrollPane
         };
 
-        int option = JOptionPane.showConfirmDialog(this, message, "Add New Movie", JOptionPane.OK_CANCEL_OPTION);
+        int option = JOptionPane.showConfirmDialog(this, message, "Add New Movie", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         if (option == JOptionPane.OK_OPTION) {
-            int id = Integer.parseInt(idField.getText());
-            String title = titleField.getText();
-            String genre = genreField.getText();
-            String releaseDate = releaseDateField.getText();
-            int runningTime = Integer.parseInt(runningTimeField.getText());
-            double price = Double.parseDouble(priceField.getText());
-            String showtimes = showtimesField.getText();
-            String poster = posterField.getText();
-            String synopsis = synopsisArea.getText();
-            Movie movie = new Movie(id, title, genre, releaseDate, runningTime, price, showtimes, poster, synopsis);
+            try {
+                int id = Integer.parseInt(idField.getText());
+                String title = titleField.getText();
+                String genre = genreField.getText();
+                String releaseDate = releaseDateField.getText();
+                int runningTime = Integer.parseInt(runningTimeField.getText());
+                double price = Double.parseDouble(priceField.getText());
+                String showtimes = showtimesField.getText();
+                String poster = posterField.getText();
+                String synopsis = synopsisArea.getText();
 
-            movieService.addMovie(movie);
-            loadMovies();
+                Movie movie = new Movie(id, title, genre, releaseDate, runningTime, price, showtimes, poster, synopsis);
+                movieService.addMovie(movie);
+                loadMovies();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout du film : " + ex.getMessage());
+            }
         }
     }
+
 
     private void editMovieAction() {
         int selectedRow = movieTable.getSelectedRow();
@@ -242,35 +252,50 @@ public class EmployeeView extends JFrame {
 
             JTextField titleField = new JTextField(movieToEdit.getTitle());
             JTextField genreField = new JTextField(movieToEdit.getGenre());
-            JTextField releaseDateField = new JTextField(movieToEdit.getReleaseDate());
+            JTextField releaseDateField = new JTextField(movieToEdit.getReleaseDate()); // format : yyyy-MM-dd
             JTextField runningTimeField = new JTextField(String.valueOf(movieToEdit.getRunningTime()));
             JTextField priceField = new JTextField(String.valueOf(movieToEdit.getPrice()));
             JTextField showtimesField = new JTextField(movieToEdit.getShowtimes());
+            JTextField posterField = new JTextField(movieToEdit.getPoster());
+            JTextArea synopsisArea = new JTextArea(movieToEdit.getSynopsis(), 5, 20);
+            synopsisArea.setLineWrap(true);
+            synopsisArea.setWrapStyleWord(true);
+            JScrollPane synopsisScrollPane = new JScrollPane(synopsisArea);
 
             Object[] message = {
-                "Title:", titleField,
-                "Genre:", genreField,
-                "Release Date (dd/MM/yyyy):", releaseDateField,
-                "Running Time (mins):", runningTimeField,
-                "Price:", priceField,
-                "Showtimes (e.g. 10:00,14:30,19:00):", showtimesField
+                    "Title:", titleField,
+                    "Genre:", genreField,
+                    "Release Date (yyyy-MM-dd):", releaseDateField,
+                    "Running Time (mins):", runningTimeField,
+                    "Price:", priceField,
+                    "Showtimes (e.g. 10:00,14:30,19:00):", showtimesField,
+                    "Poster (URL or path):", posterField,
+                    "Synopsis:", synopsisScrollPane
             };
 
-            int option = JOptionPane.showConfirmDialog(this, message, "Edit Movie", JOptionPane.OK_CANCEL_OPTION);
+            int option = JOptionPane.showConfirmDialog(this, message, "Edit Movie", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (option == JOptionPane.OK_OPTION) {
-                movieToEdit.setTitle(titleField.getText());
-                movieToEdit.setGenre(genreField.getText());
-                movieToEdit.setReleaseDate(releaseDateField.getText());
-                movieToEdit.setRunningTime(Integer.parseInt(runningTimeField.getText()));
-                movieToEdit.setPrice(Double.parseDouble(priceField.getText()));
-                movieToEdit.setShowtimes(showtimesField.getText());
-                movieService.updateMovie(movieToEdit);
-                loadMovies();
+                try {
+                    movieToEdit.setTitle(titleField.getText());
+                    movieToEdit.setGenre(genreField.getText());
+                    movieToEdit.setReleaseDate(releaseDateField.getText()); // vérifie bien que la date est au format attendu
+                    movieToEdit.setRunningTime(Integer.parseInt(runningTimeField.getText()));
+                    movieToEdit.setPrice(Double.parseDouble(priceField.getText()));
+                    movieToEdit.setShowtimes(showtimesField.getText());
+                    movieToEdit.setPoster(posterField.getText());
+                    movieToEdit.setSynopsis(synopsisArea.getText());
+
+                    movieService.updateMovie(movieToEdit);
+                    loadMovies();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erreur lors de la mise à jour du film : " + ex.getMessage());
+                }
             }
         } else {
             JOptionPane.showMessageDialog(this, "Please select a movie to edit.");
         }
     }
+
 
     private void deleteMovieAction() {
         int selectedRow = movieTable.getSelectedRow();
