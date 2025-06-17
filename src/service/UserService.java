@@ -36,6 +36,12 @@ public class UserService {
     }
 
     public boolean createUser(String username, String password, boolean isEmployee) {
+        if (username == null || username.length() < 3 || username.contains(" ")) {
+            System.out.println("Nom d'utilisateur invalide. Il doit contenir au moins 3 caractères et ne pas contenir d'espaces.");
+            afficherReglesCreation();
+            return false;
+        }
+
         if (!isPasswordValid(password)) {
             afficherReglesCreation();
             return false;
@@ -46,7 +52,6 @@ public class UserService {
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
 
-            // Vérifie si le nom d'utilisateur existe déjà (qui est aussi l'id)
             try (PreparedStatement checkUsernameStmt = conn.prepareStatement(checkUsernameQuery)) {
                 checkUsernameStmt.setString(1, username);
                 try (ResultSet rs = checkUsernameStmt.executeQuery()) {
@@ -57,7 +62,6 @@ public class UserService {
                 }
             }
 
-            // Insertion
             try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
                 String role = isEmployee ? "employee" : "customer";
                 insertStmt.setString(1, username);
@@ -96,6 +100,7 @@ public class UserService {
 
         return false;
     }
+
 
     public User authenticateUser(String username, String password) {
         String query = "SELECT * FROM users WHERE username = ? AND password = ?";
