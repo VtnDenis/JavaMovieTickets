@@ -13,6 +13,8 @@ import service.MovieService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,7 +28,8 @@ public class CustomerView extends JFrame {
     private BookingService bookingService;
     private DiscountService discountService;
 
-    private JComboBox<Movie> movieComboBox;
+    private Movie selectedMovie;
+    private JTextArea showtimesValueArea;
     private JSpinner ticketsSpinner;
     private JComboBox<Discount> discountComboBox;
     private JLabel priceLabel;
@@ -45,7 +48,7 @@ public class CustomerView extends JFrame {
         this.discountService = new DiscountService();
 
         setTitle("Customer View - " + currentUser.getUsername());
-        setSize(600, 400);
+        setSize(600, 1000);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -65,31 +68,101 @@ public class CustomerView extends JFrame {
         // Movie selection
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weightx = 0.3;
+        gbc.weightx = 1.0;
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.WEST;
         JLabel movieLabel = new JLabel("Select Movie:");
         selectionPanel.add(movieLabel, gbc);
 
-        gbc.gridx = 1;
-        gbc.weightx = 0.7;
-        movieComboBox = new JComboBox<>();
+        // Create a panel for movie selection with GridLayout (rows of 2 movies)
+        JPanel movieSelectionPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+        movieSelectionPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        
         List<Movie> movies = movieService.getAllMovies();
+        ButtonGroup movieButtonGroup = new ButtonGroup();
+        
         for (Movie movie : movies) {
-            movieComboBox.addItem(movie);
+            JPanel moviePanel = new JPanel(new BorderLayout(0, 5));
+            moviePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            
+            // Load movie poster
+            ImageIcon posterIcon = null;
+            try {
+                String posterPath = movie.getPoster();
+                if (posterPath != null && !posterPath.isEmpty()) {
+                    posterIcon = new ImageIcon(posterPath);
+                    // Scale the image to a reasonable size
+                    Image img = posterIcon.getImage();
+                    Image scaledImg = img.getScaledInstance(120, 180, Image.SCALE_SMOOTH);
+                    posterIcon = new ImageIcon(scaledImg);
+                }
+            } catch (Exception e) {
+                System.out.println("Error loading poster for " + movie.getTitle() + ": " + e.getMessage());
+            }
+            
+            // If poster couldn't be loaded, use a placeholder
+            if (posterIcon == null) {
+                JLabel titleLabel = new JLabel(movie.getTitle(), JLabel.CENTER);
+                titleLabel.setPreferredSize(new Dimension(120, 180));
+                titleLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                moviePanel.add(titleLabel, BorderLayout.CENTER);
+            } else {
+                JLabel posterLabel = new JLabel(posterIcon);
+                posterLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                moviePanel.add(posterLabel, BorderLayout.CENTER);
+            }
+            
+            // Add checkbox for selection
+            JRadioButton movieRadioButton = new JRadioButton(movie.getTitle());
+            movieRadioButton.setHorizontalAlignment(JRadioButton.CENTER);
+            movieButtonGroup.add(movieRadioButton);
+            moviePanel.add(movieRadioButton, BorderLayout.SOUTH);
+            
+            // Add action listener to handle movie selection
+            movieRadioButton.addActionListener(e -> {
+                selectedMovie = movie;
+                // Format showtimes for better readability
+                String showtimes = movie.getShowtimes();
+                showtimes = showtimes.replace("|", ", ");
+                showtimesValueArea.setText(showtimes);
+                updatePrice();
+            });
+            
+            movieSelectionPanel.add(moviePanel);
         }
-        selectionPanel.add(movieComboBox, gbc);
+        
+        // Set the first movie as selected by default if there are movies
+        if (!movies.isEmpty()) {
+            selectedMovie = movies.get(0);
+            // Select the first radio button
+            if (movieButtonGroup.getButtonCount() > 0) {
+                JRadioButton firstButton = (JRadioButton) movieButtonGroup.getElements().nextElement();
+                firstButton.setSelected(true);
+            }
+        }
+        
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 1.0;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        JScrollPane movieScrollPane = new JScrollPane(movieSelectionPanel);
+        movieScrollPane.setPreferredSize(new Dimension(0, 500));
+        selectionPanel.add(movieScrollPane, gbc);
 
         // Showtimes
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         gbc.weightx = 0.3;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         JLabel showtimesLabel = new JLabel("Showtimes:");
         selectionPanel.add(showtimesLabel, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 0.7;
         // Use JTextArea instead of JLabel for better text wrapping
-        JTextArea showtimesValueArea = new JTextArea(2, 20);
+        showtimesValueArea = new JTextArea(2, 20);
         showtimesValueArea.setEditable(false);
         showtimesValueArea.setLineWrap(true);
         showtimesValueArea.setWrapStyleWord(true);
@@ -98,21 +171,17 @@ public class CustomerView extends JFrame {
         JScrollPane showtimesScrollPane = new JScrollPane(showtimesValueArea);
         showtimesScrollPane.setBorder(BorderFactory.createEmptyBorder());
         selectionPanel.add(showtimesScrollPane, gbc);
-
-        // Update showtimes when movie selection changes
-        movieComboBox.addActionListener(e -> {
-            Movie selectedMovie = (Movie) movieComboBox.getSelectedItem();
-            if (selectedMovie != null) {
-                // Format showtimes for better readability
-                String showtimes = selectedMovie.getShowtimes();
-                showtimes = showtimes.replace("|", ", ");
-                showtimesValueArea.setText(showtimes);
-            }
-        });
+        
+        // Initialize showtimes for the default selected movie
+        if (selectedMovie != null) {
+            String showtimes = selectedMovie.getShowtimes();
+            showtimes = showtimes.replace("|", ", ");
+            showtimesValueArea.setText(showtimes);
+        }
 
         // Number of tickets
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gbc.weightx = 0.3;
         JLabel ticketsLabel = new JLabel("Number of Tickets:");
         selectionPanel.add(ticketsLabel, gbc);
@@ -124,7 +193,7 @@ public class CustomerView extends JFrame {
 
         // Discounts
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.weightx = 0.3;
         JLabel discountsLabel = new JLabel("Available Discounts:");
         selectionPanel.add(discountsLabel, gbc);
@@ -157,7 +226,7 @@ public class CustomerView extends JFrame {
 
         // Total price
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.weightx = 0.3;
         JLabel totalPriceLabel = new JLabel("Total Price:");
         selectionPanel.add(totalPriceLabel, gbc);
@@ -211,24 +280,14 @@ public class CustomerView extends JFrame {
         // Load booking history
         loadBookingHistory();
 
-        // Update price on the booking panel
-        movieComboBox.addActionListener(e -> updatePrice());
+        // Update price when spinner or discount changes
         ticketsSpinner.addChangeListener(e -> updatePrice());
         discountComboBox.addActionListener(e -> updatePrice());
-
-        // Trigger initial update of showtimes for the default selected movie
-        Movie selectedMovie = (Movie) movieComboBox.getSelectedItem();
-        if (selectedMovie != null) {
-            String showtimes = selectedMovie.getShowtimes();
-            showtimes = showtimes.replace("|", ", ");
-            showtimesValueArea.setText(showtimes);
-        }
 
         updatePrice();
     }
 
     private void updatePrice() {
-        Movie selectedMovie = (Movie) movieComboBox.getSelectedItem();
         int numTickets = (Integer) ticketsSpinner.getValue();
         Discount selectedDiscount = (Discount) discountComboBox.getSelectedItem();
 
@@ -270,7 +329,6 @@ public class CustomerView extends JFrame {
     }
 
     private void processBooking() {
-        Movie selectedMovie = (Movie) movieComboBox.getSelectedItem();
         int numTickets = (Integer) ticketsSpinner.getValue();
         Discount selectedDiscount = (Discount) discountComboBox.getSelectedItem();
 
