@@ -198,7 +198,7 @@ public class CustomerView extends JFrame {
         }
 
         // Create table model
-        String[] columnNames = {"Booking ID", "Movie", "Tickets", "Price", "Date"};
+        String[] columnNames = {"Booking ID", "Movie", "Tickets", "Price", "Booking Date", "Session Date"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
 
         // Add bookings to table
@@ -217,7 +217,8 @@ public class CustomerView extends JFrame {
                 movieTitle,
                 booking.getNumTickets(),
                 String.format(Locale.US, "%.2f", booking.getTotalPrice()),
-                booking.getBookingDate()
+                booking.getBookingDate(),
+                booking.getSessionDate()
             };
             model.addRow(row);
         }
