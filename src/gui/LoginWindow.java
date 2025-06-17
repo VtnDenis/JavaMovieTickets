@@ -17,7 +17,7 @@ public class LoginWindow extends JFrame {
 
     public LoginWindow() {
         userService = new UserService();
-        setTitle("Login / Création de compte");
+        setTitle("Login");
         setSize(350, 250);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -35,14 +35,14 @@ public class LoginWindow extends JFrame {
         passwordField = new JPasswordField();
         formPanel.add(passwordField);
 
-        formPanel.add(new JLabel("Créer un nouveau compte ?"));
+        formPanel.add(new JLabel("New Account ?"));
         createAccountCheckBox = new JCheckBox();
         formPanel.add(createAccountCheckBox);
 
-        formPanel.add(new JLabel("Rôle (si création) :"));
+        formPanel.add(new JLabel("You are an:"));
         JPanel rolePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        employeeRadio = new JRadioButton("Employé");
-        customerRadio = new JRadioButton("Client");
+        employeeRadio = new JRadioButton("Employee");
+        customerRadio = new JRadioButton("Customer");
         customerRadio.setSelected(true);
 
         ButtonGroup roleGroup = new ButtonGroup();
@@ -54,7 +54,7 @@ public class LoginWindow extends JFrame {
 
         // Bouton
         JPanel buttonPanel = new JPanel(new BorderLayout());
-        loginButton = new JButton("Valider");
+        loginButton = new JButton("OK");
         loginButton.setPreferredSize(new Dimension(0, 30));
         buttonPanel.add(loginButton, BorderLayout.CENTER);
 
@@ -73,9 +73,9 @@ public class LoginWindow extends JFrame {
             boolean isEmployee = employeeRadio.isSelected();
             boolean created = userService.createUser(username, password, isEmployee);
             if (created) {
-                JOptionPane.showMessageDialog(this, "Compte créé avec succès !");
+                JOptionPane.showMessageDialog(this, "Succes!");
             } else {
-                JOptionPane.showMessageDialog(this, "Échec de la création du compte.");
+                JOptionPane.showMessageDialog(this, "Error");
                 return;
             }
         }
@@ -89,7 +89,7 @@ public class LoginWindow extends JFrame {
             }
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Identifiants invalides.");
+            JOptionPane.showMessageDialog(this, "Error Username");
         }
     }
 }
