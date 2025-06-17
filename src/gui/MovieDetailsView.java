@@ -290,39 +290,36 @@ public class MovieDetailsView extends JFrame {
         // Format with decimal point for consistency
         priceLabel.setText(String.format(Locale.US, "%.2f", totalPrice));
     }
-
     private void processBooking() {
         int numTickets = (Integer) ticketsSpinner.getValue();
         Discount selectedDiscount = (Discount) discountComboBox.getSelectedItem();
 
-        // Parse the price, replacing comma with dot if needed
+        // Parse the price
         double totalPrice = Double.parseDouble(priceLabel.getText().replace(',', '.'));
         String bookingId = bookingService.getNextBookingId();
         String bookingDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         String sessionDate = (String) sessionDateComboBox.getSelectedItem();
 
-        Booking booking = new Booking(bookingId, currentUser.getUsername(), movie.getId(), numTickets, totalPrice, bookingDate, sessionDate);
+        Booking booking = new Booking(
+                bookingId,
+                currentUser.getUsername(),
+                movie.getId(),
+                numTickets,
+                totalPrice,
+                bookingDate,
+                sessionDate
+        );
         bookingService.addBooking(booking);
 
-        // Prepare confirmation message
-        StringBuilder message = new StringBuilder();
-        message.append("Payment Successful!\n\n");
-        message.append("Booking ID: ").append(bookingId).append("\n");
-        message.append("Movie: ").append(movie.getTitle()).append("\n");
-        message.append("Session Date: ").append(sessionDate).append("\n");
-        message.append("Tickets: ").append(numTickets).append("\n");
+        // Ouvre la nouvelle fenêtre de paiement
+        SwingUtilities.invokeLater(() -> {
+            PaymentView paymentView = new PaymentView(currentUser, movie, booking, selectedDiscount);
+            paymentView.setVisible(true);
+        });
 
-        // Add discount information if applicable
-        if (selectedDiscount != null && !"NONE".equals(selectedDiscount.getCode()) && selectedDiscount.isActive()) {
-            message.append("Discount Applied: ").append(selectedDiscount.getDescription())
-                   .append(" (").append(selectedDiscount.getPercentage()).append("%)").append("\n");
-        }
-
-        message.append("Total Price: $").append(String.format(Locale.US, "%.2f", totalPrice));
-
-        JOptionPane.showMessageDialog(this, message.toString(), "Payment Confirmation", JOptionPane.INFORMATION_MESSAGE);
-
-        // Close this window after successful booking
+        // Optionnel : ferme la fenêtre actuelle
         dispose();
     }
+
+
 }
