@@ -5,6 +5,7 @@ import model.User;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class UserService {
     private static final String URL = "jdbc:mysql://localhost:3306/cinema";
@@ -34,6 +35,68 @@ public class UserService {
         return users;
     }
 
+    public boolean createUser(String username, String password, boolean isEmployee) {
+        if (!isPasswordValid(password)) {
+            afficherReglesCreation();
+            return false;
+        }
+
+        String checkUsernameQuery = "SELECT COUNT(*) FROM users WHERE username = ?";
+        String insertQuery = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+
+            // Vérifie si le nom d'utilisateur existe déjà (qui est aussi l'id)
+            try (PreparedStatement checkUsernameStmt = conn.prepareStatement(checkUsernameQuery)) {
+                checkUsernameStmt.setString(1, username);
+                try (ResultSet rs = checkUsernameStmt.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        System.out.println("Nom d'utilisateur déjà utilisé.");
+                        return false;
+                    }
+                }
+            }
+
+            // Insertion
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+                String role = isEmployee ? "employee" : "customer";
+                insertStmt.setString(1, username);
+                insertStmt.setString(2, password);
+                insertStmt.setString(3, role);
+
+                int rowsInserted = insertStmt.executeUpdate();
+                return rowsInserted > 0;
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Erreur lors de la création de l'utilisateur : " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void afficherReglesCreation() {
+        System.out.println("Règles de création de compte :");
+        System.out.println("- Nom d'utilisateur : au moins 3 caractères, sans espaces");
+        System.out.println("- Mot de passe : au moins 8 caractères, avec au moins une lettre et un chiffre");
+    }
+
+    private boolean isPasswordValid(String password) {
+        if (password == null || password.length() < 8) {
+            return false;
+        }
+
+        boolean hasLetter = false;
+        boolean hasDigit = false;
+
+        for (char c : password.toCharArray()) {
+            if (Character.isLetter(c)) hasLetter = true;
+            if (Character.isDigit(c)) hasDigit = true;
+            if (hasLetter && hasDigit) return true;
+        }
+
+        return false;
+    }
+
     public User authenticateUser(String username, String password) {
         String query = "SELECT * FROM users WHERE username = ? AND password = ?";
 
@@ -58,7 +121,9 @@ public class UserService {
     }
     public static void main(String[] args) {
         UserService userService = new UserService();
+        Scanner scanner = new Scanner(System.in);
 
+        // Affichage des utilisateurs existants
         System.out.println("Liste des utilisateurs :");
         List<User> users = userService.getAllUsers();
 
@@ -73,15 +138,17 @@ public class UserService {
             }
         }
 
-        // Test d'authentification
-        String testUsername = "marc.lemans";
-        String testPassword = "gestion2024";
-        User authenticated = userService.authenticateUser(testUsername, testPassword);
-        if (authenticated != null) {
-            System.out.println("Connexion réussie pour : " + authenticated.getUsername() +
-                    " (rôle : " + authenticated.getRole() + ")");
-        } else {
-            System.out.println("Échec de l'authentification pour l'utilisateur : " + testUsername);
-        }
+        System.out.print("Entrez le nom d'utilisateur (qui sera aussi l'ID) : ");
+        String username = scanner.nextLine();
+
+        System.out.print("Entrez le mot de passe : ");
+        String password = scanner.nextLine();
+
+        System.out.print("Est-ce un employé ? (true/false) : ");
+        boolean isEmployee = scanner.nextBoolean();
+
+        boolean created = userService.createUser(username, password, isEmployee);
     }
-}
+
+
+    }
