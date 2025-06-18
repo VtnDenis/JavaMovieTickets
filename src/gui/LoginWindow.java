@@ -10,9 +10,7 @@ public class LoginWindow extends JFrame {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JButton loginButton;
-    private JCheckBox createAccountCheckBox;
-    private JRadioButton employeeRadio;
-    private JRadioButton customerRadio;
+    private JButton registerButton;
     private UserService userService;
 
     public LoginWindow() {
@@ -26,7 +24,7 @@ public class LoginWindow extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Formulaire
-        JPanel formPanel = new JPanel(new GridLayout(5, 2, 5, 5));
+        JPanel formPanel = new JPanel(new GridLayout(2, 2, 5, 5));
         formPanel.add(new JLabel("Username:"));
         usernameField = new JTextField();
         formPanel.add(usernameField);
@@ -35,30 +33,17 @@ public class LoginWindow extends JFrame {
         passwordField = new JPasswordField();
         formPanel.add(passwordField);
 
-        formPanel.add(new JLabel("New Account ?"));
-        createAccountCheckBox = new JCheckBox();
-        formPanel.add(createAccountCheckBox);
+        // Buttons
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 0, 5));
 
-        formPanel.add(new JLabel("You are an:"));
-        JPanel rolePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        employeeRadio = new JRadioButton("Employee");
-        customerRadio = new JRadioButton("Customer");
-        customerRadio.setSelected(true);
+        registerButton = new JButton("Register");
+        registerButton.addActionListener(e -> openRegisterWindow());
 
-        ButtonGroup roleGroup = new ButtonGroup();
-        roleGroup.add(employeeRadio);
-        roleGroup.add(customerRadio);
-        rolePanel.add(employeeRadio);
-        rolePanel.add(customerRadio);
-        formPanel.add(rolePanel);
-
-        // Bouton
-        JPanel buttonPanel = new JPanel(new BorderLayout());
         loginButton = new JButton("OK");
-        loginButton.setPreferredSize(new Dimension(0, 30));
-        buttonPanel.add(loginButton, BorderLayout.CENTER);
-
         loginButton.addActionListener(e -> process());
+
+        buttonPanel.add(registerButton);
+        buttonPanel.add(loginButton);
 
         mainPanel.add(formPanel, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -68,17 +53,6 @@ public class LoginWindow extends JFrame {
     private void process() {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
-
-        if (createAccountCheckBox.isSelected()) {
-            boolean isEmployee = employeeRadio.isSelected();
-            boolean created = userService.createUser(username, password, isEmployee);
-            if (created) {
-                JOptionPane.showMessageDialog(this, "Succes!");
-            } else {
-                JOptionPane.showMessageDialog(this, "Error");
-                return;
-            }
-        }
 
         User user = userService.authenticateUser(username, password);
         if (user != null) {
@@ -91,5 +65,11 @@ public class LoginWindow extends JFrame {
         } else {
             JOptionPane.showMessageDialog(this, "Error Username");
         }
+    }
+
+    private void openRegisterWindow() {
+        setVisible(false); // Hide the login window
+        RegisterWindow registerWindow = new RegisterWindow(this);
+        registerWindow.setVisible(true);
     }
 }
