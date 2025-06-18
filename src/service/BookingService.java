@@ -38,7 +38,7 @@ public class BookingService {
     }
 
     public void addBooking(Booking booking) {
-        String sql = "INSERT INTO booking (bookingId, username, movieId, numTickets, totalPrice, bookingDate, sessionDate) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO booking (bookingId, username, movieId, numTickets, totalPrice, bookingDate, sessionDate, sessionTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -52,6 +52,7 @@ public class BookingService {
             // utilise Date.valueOf avec format yyyy-MM-dd
             pstmt.setDate(6, Date.valueOf(booking.getBookingDate()));
             pstmt.setDate(7, Date.valueOf(booking.getSessionDate()));
+            pstmt.setTime(8, Time.valueOf(booking.getSessionTime()));
 
             pstmt.executeUpdate();
 

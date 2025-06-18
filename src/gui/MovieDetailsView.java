@@ -27,10 +27,10 @@ public class MovieDetailsView extends JFrame {
     private DiscountService discountService;
 
     private JTextArea synopsisArea;
-    private JTextArea showtimesValueArea;
     private JSpinner ticketsSpinner;
     private JComboBox<Discount> discountComboBox;
     private JComboBox<String> sessionDateComboBox;
+    private JComboBox<String> sessionTimeComboBox;
     private JLabel priceLabel;
     private JButton buyButton;
 
@@ -120,26 +120,7 @@ public class MovieDetailsView extends JFrame {
         JScrollPane synopsisScrollPane = new JScrollPane(synopsisArea);
         synopsisPanel.add(synopsisScrollPane, BorderLayout.CENTER);
 
-        centerPanel.add(synopsisPanel, BorderLayout.NORTH);
-
-        // Showtimes
-        JPanel showtimesPanel = new JPanel(new BorderLayout(0, 5));
-        JLabel showtimesLabel = new JLabel("Showtimes:");
-        showtimesLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        showtimesPanel.add(showtimesLabel, BorderLayout.NORTH);
-
-        String showtimes = movie.getShowtimes();
-        showtimes = showtimes.replace("|", ", ");
-        showtimesValueArea = new JTextArea(showtimes);
-        showtimesValueArea.setLineWrap(true);
-        showtimesValueArea.setWrapStyleWord(true);
-        showtimesValueArea.setEditable(false);
-        showtimesValueArea.setRows(2);
-        showtimesValueArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        JScrollPane showtimesScrollPane = new JScrollPane(showtimesValueArea);
-        showtimesPanel.add(showtimesScrollPane, BorderLayout.CENTER);
-
-        centerPanel.add(showtimesPanel, BorderLayout.CENTER);
+        centerPanel.add(synopsisPanel, BorderLayout.CENTER);
 
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
@@ -217,9 +198,28 @@ public class MovieDetailsView extends JFrame {
 
         bookingPanel.add(sessionDateComboBox, gbc);
 
-        // Total price
+        // Session time
         gbc.gridx = 0;
         gbc.gridy = 3;
+        gbc.weightx = 0.3;
+        JLabel sessionTimeLabel = new JLabel("Session Time:");
+        bookingPanel.add(sessionTimeLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        sessionTimeComboBox = new JComboBox<>();
+
+        // Parse showtimes from the movie
+        String[] showtimeArray = movie.getShowtimes().split(",");
+        for (String showtime : showtimeArray) {
+            sessionTimeComboBox.addItem(showtime.trim());
+        }
+
+        bookingPanel.add(sessionTimeComboBox, gbc);
+
+        // Total price
+        gbc.gridx = 0;
+        gbc.gridy = 4;
         gbc.weightx = 0.3;
         JLabel totalPriceLabel = new JLabel("Total Price:");
         bookingPanel.add(totalPriceLabel, gbc);
@@ -232,7 +232,7 @@ public class MovieDetailsView extends JFrame {
 
         // Buy button
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         buyButton = new JButton("Buy Tickets");
@@ -299,6 +299,12 @@ public class MovieDetailsView extends JFrame {
         String bookingId = bookingService.getNextBookingId();
         String bookingDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         String sessionDate = (String) sessionDateComboBox.getSelectedItem();
+        String sessionTime = (String) sessionTimeComboBox.getSelectedItem();
+
+        // Normaliser le format de l'heure pour s'assurer qu'il soit au format HH:mm:ss
+        if (sessionTime != null && sessionTime.matches("\\d{2}:\\d{2}")) {
+            sessionTime = sessionTime + ":00"; // Ajouter les secondes si elles manquent
+        }
 
         Booking booking = new Booking(
                 bookingId,
@@ -307,7 +313,8 @@ public class MovieDetailsView extends JFrame {
                 numTickets,
                 totalPrice,
                 bookingDate,
-                sessionDate
+                sessionDate,
+                sessionTime
         );
         bookingService.addBooking(booking);
 

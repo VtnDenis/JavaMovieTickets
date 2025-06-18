@@ -8,8 +8,9 @@ public class Booking {
     private double totalPrice;
     private String bookingDate;
     private String sessionDate;
+    private String sessionTime;
 
-    public Booking(String bookingId, String username, int movieId, int numTickets, double totalPrice, String bookingDate, String sessionDate) {
+    public Booking(String bookingId, String username, int movieId, int numTickets, double totalPrice, String bookingDate, String sessionDate, String sessionTime) {
         this.bookingId = bookingId;
         this.username = username;
         this.movieId = movieId;
@@ -17,11 +18,17 @@ public class Booking {
         this.totalPrice = totalPrice;
         this.bookingDate = bookingDate;
         this.sessionDate = sessionDate;
+        this.sessionTime = sessionTime;
     }
 
-    // Constructor without sessionDate for backward compatibility
+    // Constructor without sessionTime for backward compatibility
+    public Booking(String bookingId, String username, int movieId, int numTickets, double totalPrice, String bookingDate, String sessionDate) {
+        this(bookingId, username, movieId, numTickets, totalPrice, bookingDate, sessionDate, "");
+    }
+
+    // Constructor without sessionDate and sessionTime for backward compatibility
     public Booking(String bookingId, String username, int movieId, int numTickets, double totalPrice, String bookingDate) {
-        this(bookingId, username, movieId, numTickets, totalPrice, bookingDate, bookingDate);
+        this(bookingId, username, movieId, numTickets, totalPrice, bookingDate, bookingDate, "");
     }
 
     public String getBookingId() {
@@ -50,5 +57,9 @@ public class Booking {
 
     public String getSessionDate() {
         return sessionDate;
+    }
+
+    public String getSessionTime() {
+        return sessionTime;
     }
 }
