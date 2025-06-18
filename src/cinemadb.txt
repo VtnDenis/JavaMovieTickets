@@ -1,137 +1,181 @@
--- Base de données : cinema
+-- phpMyAdmin SQL Dump
+-- version 5.1.2
+-- https://www.phpmyadmin.net/
+--
+-- Host: localhost:3306
+-- Generation Time: Jun 18, 2025 at 02:45 PM
+-- Server version: 5.7.24
+-- PHP Version: 8.3.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
--- Encodage
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
--- ----------------------------
--- Table : users
--- ----------------------------
-CREATE TABLE `users` (
-  `username` VARCHAR(50) NOT NULL,
-  `password` VARCHAR(255) DEFAULT NULL,
-  `role` VARCHAR(20) DEFAULT NULL,
-  PRIMARY KEY (`username`)
+--
+-- Database: `cinema`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `booking`
+--
+
+CREATE TABLE `booking` (
+  `bookingId` varchar(50) NOT NULL,
+  `username` varchar(50) DEFAULT NULL,
+  `movieId` int(11) DEFAULT NULL,
+  `numTickets` int(11) DEFAULT NULL,
+  `totalPrice` double DEFAULT NULL,
+  `bookingDate` date DEFAULT NULL,
+  `sessionDate` date DEFAULT NULL,
+  `sessionTime` time NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `users` (`username`, `password`, `role`) VALUES
-('claire.baudoin', 'admin789', 'employee'),
-('emma.lune', 'azerty123', 'customer'),
-('louis.dupont', 'monpass45', 'customer'),
-('marc.lemans', 'gestion2024', 'employee');
+--
+-- Dumping data for table `booking`
+--
 
--- ----------------------------
--- Table : customer
--- ----------------------------
+INSERT INTO `booking` (`bookingId`, `username`, `movieId`, `numTickets`, `totalPrice`, `bookingDate`, `sessionDate`, `sessionTime`) VALUES
+('B001', 'emma.lune', 2, 1, 9, '2025-06-17', '2025-06-21', '00:00:00'),
+('B002', 'emma.lune', 1, 1, 9, '2025-06-17', '2025-06-20', '00:00:00'),
+('B003', 'emma.lune', 1, 1, 9, '2025-06-17', '2025-06-21', '00:00:00'),
+('B004', 'emma.lune', 4, 1, 10, '2025-06-17', '2025-06-24', '00:00:00'),
+('B005', 'emma.lune', 2, 1, 9, '2025-06-18', '2025-06-19', '14:00:00'),
+('B006', 'emma.lune', 3, 1, 11.5, '2025-06-18', '2025-06-19', '16:00:00'),
+('BK001', 'emma.lune', 1, 2, 18, '2025-06-10', '2025-06-20', '00:00:00'),
+('BK002', 'louis.dupont', 2, 1, 9, '2025-06-11', '2025-06-21', '00:00:00');
+
+--
+-- Triggers `booking`
+--
+DELIMITER $$
+CREATE TRIGGER `set_booking_date` BEFORE INSERT ON `booking` FOR EACH ROW BEGIN
+  IF NEW.bookingDate IS NULL THEN
+    SET NEW.bookingDate = CURDATE();
+  END IF;
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `customer`
+--
+
 CREATE TABLE `customer` (
-  `username` VARCHAR(50) NOT NULL,
-  `fullName` VARCHAR(100) DEFAULT NULL,
-  `student` TINYINT(1) DEFAULT NULL,
-  PRIMARY KEY (`username`),
-  CONSTRAINT `customer_ibfk_1` FOREIGN KEY (`username`) REFERENCES `users` (`username`)
+  `username` varchar(50) NOT NULL,
+  `fullName` varchar(100) DEFAULT NULL,
+  `student` tinyint(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `customer`
+--
 
 INSERT INTO `customer` (`username`, `fullName`, `student`) VALUES
 ('emma.lune', 'Emma Lune', 1),
 ('louis.dupont', 'Louis Dupont', 0);
 
--- ----------------------------
--- Table : movie
--- ----------------------------
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `discount`
+--
+
+CREATE TABLE `discount` (
+  `code` varchar(20) NOT NULL,
+  `description` text,
+  `percentage` double DEFAULT NULL,
+  `active` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `discount`
+--
+
+INSERT INTO `discount` (`code`, `description`, `percentage`, `active`) VALUES
+('BIENVENUE5', 'Welcome discount', 5, 1),
+('STUDENT10', '10% discount for students', 10, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `movie`
+--
+
 CREATE TABLE `movie` (
-  `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(100) DEFAULT NULL,
-  `genre` VARCHAR(50) DEFAULT NULL,
-  `releaseDate` DATE DEFAULT NULL,
-  `runningTime` INT(11) DEFAULT NULL,
-  `price` DOUBLE DEFAULT NULL,
-  `showtimes` TEXT,
-  `poster` VARCHAR(255) DEFAULT NULL,
-  `synopsis` TEXT,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=6;
+  `id` int(11) NOT NULL,
+  `title` varchar(100) DEFAULT NULL,
+  `genre` varchar(50) DEFAULT NULL,
+  `releaseDate` date DEFAULT NULL,
+  `runningTime` int(11) DEFAULT NULL,
+  `price` double DEFAULT NULL,
+  `showtimes` text,
+  `poster` varchar(255) DEFAULT NULL,
+  `synopsis` text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `movie`
+--
 
 INSERT INTO `movie` (`id`, `title`, `genre`, `releaseDate`, `runningTime`, `price`, `showtimes`, `poster`, `synopsis`) VALUES
 (1, 'Philadelphia', 'Drama', '1993-12-22', 125, 9, '15:00, 20:00', 'images/philadelphia.png', 'A lawyer with AIDS sues his former law firm for wrongful dismissal, with help from a reluctant colleague.'),
 (2, 'American History X', 'Drama', '1998-10-30', 119, 9, '14:00, 19:30', 'images/americanhistoryx.png', 'A former neo-Nazi tries to prevent his younger brother from going down the same path of hatred and violence.'),
 (3, 'The Batman', 'Action', '2022-03-04', 176, 11.5, '16:00, 21:00', 'images/thebatman.png', 'Batman faces the Riddler in a dark and corrupt Gotham while uncovering secrets about his own family.'),
-(4, 'F1: The Movie', 'Sport', '2025-07-01', 130, 10, '17:00, 22:00', 'images/F1.png', 'An intense dive into the world of Formula 1, filled with rivalries, team strategies, and the pursuit of victory.'),
-(5, 'Babylon', 'Drama, Historic', '2023-01-18', 189, 10, '11:00,15:15,20:15', 'images/babylon.png', 'Los Angeles in the 1920s. A tale of boundless ambition and wild excess...');
+(4, 'F1: The Movie', 'Sport', '2025-07-01', 130, 10, '17:00, 22:00', 'images/F1.png', 'An intense dive into the world of Formula 1, filled with rivalries, team strategies, and the pursuit of victory.');
 
--- ----------------------------
--- Table : booking
--- ----------------------------
-CREATE TABLE `booking` (
-  `bookingId` VARCHAR(50) NOT NULL,
-  `username` VARCHAR(50) DEFAULT NULL,
-  `movieId` INT(11) DEFAULT NULL,
-  `numTickets` INT(11) DEFAULT NULL,
-  `totalPrice` DOUBLE DEFAULT NULL,
-  `bookingDate` DATE DEFAULT NULL,
-  `sessionDate` DATE DEFAULT NULL,
-  PRIMARY KEY (`bookingId`),
-  KEY `username` (`username`),
-  KEY `movieId` (`movieId`),
-  CONSTRAINT `booking_ibfk_1` FOREIGN KEY (`username`) REFERENCES `users` (`username`),
-  CONSTRAINT `booking_ibfk_2` FOREIGN KEY (`movieId`) REFERENCES `movie` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+-- --------------------------------------------------------
 
-INSERT INTO `booking` (`bookingId`, `username`, `movieId`, `numTickets`, `totalPrice`, `bookingDate`, `sessionDate`) VALUES
-('B001', 'emma.lune', 2, 1, 9, '2025-06-17', '2025-06-21'),
-('B002', 'emma.lune', 1, 1, 9, '2025-06-17', '2025-06-20'),
-('B003', 'emma.lune', 1, 1, 9, '2025-06-17', '2025-06-21'),
-('B004', 'emma.lune', 4, 1, 10, '2025-06-17', '2025-06-24'),
-('B005', 'emma.lune', 1, 1, 9, '2025-06-17', '2025-06-18'),
-('BK001', 'emma.lune', 1, 2, 18, '2025-06-10', '2025-06-20'),
-('BK002', 'louis.dupont', 2, 1, 9, '2025-06-11', '2025-06-21');
+--
+-- Table structure for table `payment`
+--
 
--- Trigger : set default booking date
-DELIMITER $$
-CREATE TRIGGER `set_booking_date` BEFORE INSERT ON `booking`
-FOR EACH ROW
-BEGIN
-  IF NEW.bookingDate IS NULL THEN
-    SET NEW.bookingDate = CURDATE();
-  END IF;
-END$$
-DELIMITER ;
-
--- ----------------------------
--- Table : payment
--- ----------------------------
 CREATE TABLE `payment` (
-  `paymentId` INT(11) NOT NULL AUTO_INCREMENT,
-  `bookingId` VARCHAR(50) DEFAULT NULL,
-  `paymentDate` DATE DEFAULT NULL,
-  `amount` DOUBLE DEFAULT NULL,
-  `paymentMethod` VARCHAR(50) DEFAULT NULL,
-  `cardNumber` VARCHAR(20) DEFAULT NULL,
-  `cardHolderName` VARCHAR(100) DEFAULT NULL,
-  `cardExpiry` VARCHAR(7) DEFAULT NULL,
-  `cardCVV` VARCHAR(4) DEFAULT NULL,
-  PRIMARY KEY (`paymentId`),
-  KEY `bookingId` (`bookingId`),
-  CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`bookingId`) REFERENCES `booking` (`bookingId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=3;
-
-INSERT INTO `payment` (`paymentId`, `bookingId`, `paymentDate`, `amount`, `paymentMethod`, `cardNumber`, `cardHolderName`, `cardExpiry`, `cardCVV`) VALUES
-(1, 'BK001', '2025-06-10', 18.00, 'Credit Card', '4111111111111111', 'John Doe', '12/2027', '123'),
-(2, 'BK002', '2025-06-11', 9.00, 'Cash', NULL, NULL, NULL, NULL);
-
--- ----------------------------
--- Table : screen
--- ----------------------------
-CREATE TABLE `screen` (
-  `screenId` INT(11) NOT NULL,
-  `movieId` INT(11) DEFAULT NULL,
-  `capacity` INT(11) DEFAULT NULL,
-  PRIMARY KEY (`screenId`),
-  KEY `movieId` (`movieId`),
-  CONSTRAINT `screen_ibfk_1` FOREIGN KEY (`movieId`) REFERENCES `movie` (`id`)
+  `paymentId` int(11) NOT NULL,
+  `bookingId` varchar(50) DEFAULT NULL,
+  `paymentDate` date DEFAULT NULL,
+  `amount` double DEFAULT NULL,
+  `paymentMethod` varchar(50) DEFAULT NULL,
+  `cardNumber` varchar(19) NOT NULL,
+  `cardHolderName` varchar(100) NOT NULL,
+  `cardExpiry` char(5) NOT NULL,
+  `cardCvv` char(3) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `payment`
+--
+
+INSERT INTO `payment` (`paymentId`, `bookingId`, `paymentDate`, `amount`, `paymentMethod`, `cardNumber`, `cardHolderName`, `cardExpiry`, `cardCvv`) VALUES
+(1, 'BK001', '2025-06-10', 18, 'Credit Card', '****', 'N/A', '00/00', NULL),
+(2, 'BK002', '2025-06-11', 9, 'Cash', '****', 'N/A', '00/00', NULL),
+(5, 'B005', '2025-06-18', 9, 'Credit Card', '1111111111111111', 'DE', '01/01', '123'),
+(6, 'B006', '2025-06-18', 11.5, 'Credit Card', '0101010101010101', 'DA', '02/02', '098');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `screen`
+--
+
+CREATE TABLE `screen` (
+  `screenId` int(11) NOT NULL,
+  `movieId` int(11) DEFAULT NULL,
+  `capacity` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `screen`
+--
 
 INSERT INTO `screen` (`screenId`, `movieId`, `capacity`) VALUES
 (1, 1, 120),
@@ -139,19 +183,125 @@ INSERT INTO `screen` (`screenId`, `movieId`, `capacity`) VALUES
 (3, 3, 150),
 (4, 4, 130);
 
--- ----------------------------
--- Table : discount
--- ----------------------------
-CREATE TABLE `discount` (
-  `code` VARCHAR(20) NOT NULL,
-  `description` TEXT,
-  `percentage` DOUBLE DEFAULT NULL,
-  `active` TINYINT(1) DEFAULT NULL,
-  PRIMARY KEY (`code`)
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `role` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `discount` (`code`, `description`, `percentage`, `active`) VALUES
-('BIENVENUE5', 'Welcome discount', 5, 1),
-('STUDENT10', '10% discount for students', 10, 1);
+--
+-- Dumping data for table `users`
+--
 
+INSERT INTO `users` (`username`, `password`, `role`) VALUES
+('claire.baudoin', 'admin789', 'employee'),
+('emma.lune', 'azerty123', 'customer'),
+('louis.dupont', 'monpass45', 'customer'),
+('marc.lemans', 'gestion2024', 'employee');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `booking`
+--
+ALTER TABLE `booking`
+  ADD PRIMARY KEY (`bookingId`),
+  ADD KEY `username` (`username`),
+  ADD KEY `movieId` (`movieId`),
+  ADD KEY `idx_sessionDateTime` (`sessionDate`,`sessionTime`);
+
+--
+-- Indexes for table `customer`
+--
+ALTER TABLE `customer`
+  ADD PRIMARY KEY (`username`);
+
+--
+-- Indexes for table `discount`
+--
+ALTER TABLE `discount`
+  ADD PRIMARY KEY (`code`);
+
+--
+-- Indexes for table `movie`
+--
+ALTER TABLE `movie`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `payment`
+--
+ALTER TABLE `payment`
+  ADD PRIMARY KEY (`paymentId`),
+  ADD KEY `bookingId` (`bookingId`);
+
+--
+-- Indexes for table `screen`
+--
+ALTER TABLE `screen`
+  ADD PRIMARY KEY (`screenId`),
+  ADD KEY `movieId` (`movieId`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`username`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `movie`
+--
+ALTER TABLE `movie`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `payment`
+--
+ALTER TABLE `payment`
+  MODIFY `paymentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `booking`
+--
+ALTER TABLE `booking`
+  ADD CONSTRAINT `booking_ibfk_1` FOREIGN KEY (`username`) REFERENCES `users` (`username`),
+  ADD CONSTRAINT `booking_ibfk_2` FOREIGN KEY (`movieId`) REFERENCES `movie` (`id`);
+
+--
+-- Constraints for table `customer`
+--
+ALTER TABLE `customer`
+  ADD CONSTRAINT `customer_ibfk_1` FOREIGN KEY (`username`) REFERENCES `users` (`username`);
+
+--
+-- Constraints for table `payment`
+--
+ALTER TABLE `payment`
+  ADD CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`bookingId`) REFERENCES `booking` (`bookingId`);
+
+--
+-- Constraints for table `screen`
+--
+ALTER TABLE `screen`
+  ADD CONSTRAINT `screen_ibfk_1` FOREIGN KEY (`movieId`) REFERENCES `movie` (`id`);
 COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
