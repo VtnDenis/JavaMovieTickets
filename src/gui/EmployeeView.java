@@ -140,8 +140,9 @@ public class EmployeeView extends JFrame {
         List<Movie> movies = movieService.getAllMovies();
 
         String[] columnNames = {
-                "ID", "Titre", "Genre", "Date de sortie", "Durée (min)", "Prix (€)", "Séances", "Affiche", "Synopsis"
+                "ID", "Title", "Genre", "Release Date", "Duration (min)", "Price (£)", "Showtimes", "Poster", "Synopsis"
         };
+
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
         for (Movie movie : movies) {
             Object[] row = {
@@ -238,7 +239,7 @@ public class EmployeeView extends JFrame {
                 movieService.addMovie(movie);
                 loadMovies();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout du film : " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, "Error adding the movie: " + ex.getMessage());
             }
         }
     }
@@ -288,7 +289,7 @@ public class EmployeeView extends JFrame {
                     movieService.updateMovie(movieToEdit);
                     loadMovies();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Erreur lors de la mise à jour du film : " + ex.getMessage());
+                    JOptionPane.showMessageDialog(this, "Error updating the movie: " + ex.getMessage());
                 }
             }
         } else {
