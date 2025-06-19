@@ -62,15 +62,59 @@ public class CustomerView extends JFrame {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         titleLabel.setHorizontalAlignment(JLabel.CENTER);
         titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        moviesPanel.add(titleLabel, BorderLayout.NORTH);
+
+        // Create search panel
+        JPanel searchPanel = new JPanel(new BorderLayout(10, 0));
+        searchPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+
+        JLabel searchLabel = new JLabel("Search: ");
+        searchLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        JTextField searchField = new JTextField();
+        searchField.setPreferredSize(new Dimension(200, 30));
+
+        // Add document listener to update results as user types
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                updateMovieDisplay(searchField.getText());
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                updateMovieDisplay(searchField.getText());
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                updateMovieDisplay(searchField.getText());
+            }
+        });
+
+        searchPanel.add(searchLabel, BorderLayout.WEST);
+        searchPanel.add(searchField, BorderLayout.CENTER);
+
+        // Create header panel to hold title and search
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.add(titleLabel, BorderLayout.NORTH);
+        headerPanel.add(searchPanel, BorderLayout.CENTER);
+
+        moviesPanel.add(headerPanel, BorderLayout.NORTH);
+
+        // Initialize with all movies
+        updateMovieDisplay("");
+    }
+
+    private void updateMovieDisplay(String searchText) {
+        // Get all movies and filter based on search text
+        List<Movie> allMovies = movieService.getAllMovies();
+        List<Movie> filteredMovies = filterMovies(allMovies, searchText);
 
         // Create a panel for movie grid with GridLayout (rows of 3 movies)
         JPanel movieGridPanel = new JPanel(new GridLayout(0, 3, 15, 15));
         movieGridPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        List<Movie> movies = movieService.getAllMovies();
-
-        for (Movie movie : movies) {
+        for (Movie movie : filteredMovies) {
             JPanel moviePanel = new JPanel(new BorderLayout(0, 5));
             moviePanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY),
@@ -142,7 +186,32 @@ public class CustomerView extends JFrame {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother scrolling
 
+        // Remove previous content if it exists
+        Component centerComponent = ((BorderLayout)moviesPanel.getLayout()).getLayoutComponent(BorderLayout.CENTER);
+        if (centerComponent != null) {
+            moviesPanel.remove(centerComponent);
+        }
+
         moviesPanel.add(scrollPane, BorderLayout.CENTER);
+        moviesPanel.revalidate();
+        moviesPanel.repaint();
+    }
+
+    private List<Movie> filterMovies(List<Movie> movies, String searchText) {
+        if (searchText == null || searchText.trim().isEmpty()) {
+            return movies; // Return all movies if search text is empty
+        }
+
+        String searchLower = searchText.toLowerCase().trim();
+        List<Movie> filteredMovies = new ArrayList<>();
+
+        for (Movie movie : movies) {
+            if (movie.getTitle().toLowerCase().contains(searchLower)) {
+                filteredMovies.add(movie);
+            }
+        }
+
+        return filteredMovies;
     }
 
     private void initHistoryPanel() {
