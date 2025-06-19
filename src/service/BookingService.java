@@ -12,7 +12,7 @@ public class BookingService {
 
     public List<Booking> getAllBookings() {
         List<Booking> bookings = new ArrayList<>();
-        String sql = "SELECT bookingId, username, movieId, numTickets, totalPrice, bookingDate, sessionDate FROM booking";
+        String sql = "SELECT bookingId, username, movieId, numTickets, totalPrice, bookingDate, sessionDate, sessionTime FROM booking";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              Statement stmt = conn.createStatement();
@@ -26,7 +26,8 @@ public class BookingService {
                         rs.getInt("numTickets"),
                         rs.getDouble("totalPrice"),
                         rs.getDate("bookingDate").toString(),
-                        rs.getDate("sessionDate").toString()
+                        rs.getDate("sessionDate").toString(),
+                        rs.getTime("sessionTime").toString()
                 );
                 bookings.add(booking);
             }
