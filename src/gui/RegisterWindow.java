@@ -9,8 +9,7 @@ import javax.swing.SwingUtilities;
 public class RegisterWindow extends JDialog {
     private JTextField usernameField;
     private JPasswordField passwordField;
-    private JRadioButton employeeRadio;
-    private JRadioButton customerRadio;
+    private JRadioButton customerRadio; // Kept for backward compatibility
     private JButton registerButton;
     private JButton cancelButton;
     private UserService userService;
@@ -35,18 +34,10 @@ public class RegisterWindow extends JDialog {
         passwordField = new JPasswordField();
         formPanel.add(passwordField);
 
-        formPanel.add(new JLabel("You are an:"));
-        JPanel rolePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        employeeRadio = new JRadioButton("Employee");
+        // No longer asking for role - all registrations are for customers
         customerRadio = new JRadioButton("Customer");
         customerRadio.setSelected(true);
-
-        ButtonGroup roleGroup = new ButtonGroup();
-        roleGroup.add(employeeRadio);
-        roleGroup.add(customerRadio);
-        rolePanel.add(employeeRadio);
-        rolePanel.add(customerRadio);
-        formPanel.add(rolePanel);
+        customerRadio.setVisible(false); // Hidden as it's no longer a choice
 
         // Button panel
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 10, 0));
@@ -67,7 +58,8 @@ public class RegisterWindow extends JDialog {
     private void register() {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
-        boolean isEmployee = employeeRadio.isSelected();
+        // All registrations are for customers
+        boolean isEmployee = false;
 
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Username and password cannot be empty", "Registration Error", JOptionPane.ERROR_MESSAGE);

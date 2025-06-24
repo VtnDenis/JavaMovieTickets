@@ -4,10 +4,12 @@ import model.Customer;
 import model.Discount;
 import model.Movie;
 import model.Booking;
+import model.User;
 import service.CustomerService;
 import service.DiscountService;
 import service.MovieService;
 import service.BookingService;
+import service.UserService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -19,6 +21,11 @@ public class EmployeeView extends JFrame {
     private CustomerService customerService;
     private BookingService bookingService;
     private DiscountService discountService;
+    private UserService userService;
+
+    private JPanel userManagementPanel;
+    private JTable userTable;
+    private JButton addUserButton, editUserButton, deleteUserButton;
 
     private JTabbedPane tabbedPane;
 
@@ -42,6 +49,7 @@ public class EmployeeView extends JFrame {
         this.customerService = new CustomerService();
         this.bookingService = new BookingService();
         this.discountService = new DiscountService();
+        this.userService = new UserService();
 
         setTitle("Employee Dashboard");
         setSize(800, 600);
@@ -54,17 +62,20 @@ public class EmployeeView extends JFrame {
         initCustomerListPanel();
         initBookingListPanel();
         initDiscountManagementPanel();
+        initUserManagementPanel();
 
         tabbedPane.addTab("Manage Movies", movieManagementPanel);
         tabbedPane.addTab("Manage Customers", customerListPanel);
         tabbedPane.addTab("View Bookings", bookingListPanel);
         tabbedPane.addTab("Manage Discounts", discountManagementPanel);
+        tabbedPane.addTab("Manage Users", userManagementPanel);
 
         add(tabbedPane);
         loadMovies();
         loadCustomers();
         loadBookings();
         loadDiscounts();
+        loadUsers();
     }
 
     private void initMovieManagementPanel() {
@@ -493,6 +504,117 @@ public class EmployeeView extends JFrame {
             }
         } else {
             JOptionPane.showMessageDialog(this, "Please select a discount to toggle its active status.");
+        }
+    }
+
+    private void initUserManagementPanel() {
+        userManagementPanel = new JPanel(new BorderLayout());
+        userTable = new JTable();
+        userManagementPanel.add(new JScrollPane(userTable), BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel();
+        addUserButton = new JButton("Add Employee");
+        editUserButton = new JButton("Edit User");
+        deleteUserButton = new JButton("Delete User");
+
+        addUserButton.addActionListener(e -> addUserAction());
+        editUserButton.addActionListener(e -> editUserAction());
+        deleteUserButton.addActionListener(e -> deleteUserAction());
+
+        buttonPanel.add(addUserButton);
+        buttonPanel.add(editUserButton);
+        buttonPanel.add(deleteUserButton);
+        userManagementPanel.add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private void loadUsers() {
+        List<User> users = userService.getAllUsers();
+        String[] columnNames = {"Username", "Role"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        for (User user : users) {
+            Object[] row = {user.getUsername(), user.getRole()};
+            model.addRow(row);
+        }
+        userTable.setModel(model);
+    }
+
+    private void addUserAction() {
+        JTextField usernameField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+
+        Object[] message = {
+            "Username:", usernameField,
+            "Password:", passwordField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Add New Employee", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            String username = usernameField.getText().trim();
+            String password = new String(passwordField.getPassword());
+
+            if (username.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Username and password cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Create employee user (isEmployee = true)
+            boolean created = userService.createUser(username, password, true);
+            if (created) {
+                JOptionPane.showMessageDialog(this, "Employee account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                loadUsers();
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "Creation failed. Please ensure:\n" +
+                    "- Username is at least 3 characters without spaces\n" +
+                    "- Password is at least 8 characters with at least one letter and one digit\n" +
+                    "- Username is not already taken", 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void editUserAction() {
+        int selectedRow = userTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            String username = (String) userTable.getValueAt(selectedRow, 0);
+
+            JPasswordField passwordField = new JPasswordField();
+
+            Object[] message = {
+                "New Password:", passwordField
+            };
+
+            int option = JOptionPane.showConfirmDialog(this, message, "Change User Password", JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.OK_OPTION) {
+                String password = new String(passwordField.getPassword());
+
+                if (password.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Password cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // For now, we'll just show a message since we don't have a method to update passwords
+                JOptionPane.showMessageDialog(this, "Password change functionality not implemented yet.", "Not Implemented", JOptionPane.INFORMATION_MESSAGE);
+                // In a real implementation, you would call a method like userService.updatePassword(username, password)
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a user to edit.");
+        }
+    }
+
+    private void deleteUserAction() {
+        int selectedRow = userTable.getSelectedRow();
+        if (selectedRow >= 0) {
+            String username = (String) userTable.getValueAt(selectedRow, 0);
+            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this user?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                // For now, we'll just show a message since we don't have a method to delete users
+                JOptionPane.showMessageDialog(this, "User deletion functionality not implemented yet.", "Not Implemented", JOptionPane.INFORMATION_MESSAGE);
+                // In a real implementation, you would call a method like userService.deleteUser(username)
+                // loadUsers();
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a user to delete.");
         }
     }
 }
